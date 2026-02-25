@@ -237,19 +237,6 @@ export default function Products() {
       accessor: (p) => (
         <div className="flex justify-end gap-2">
           <button 
-            onClick={() => {
-              const newStatus: ProductStatus = p.status === 'active' ? 'inactive' : 'active';
-              const updated = storageService.getProducts().map(item => 
-                item.id === p.id ? { ...item, status: newStatus } : item
-              );
-              storageService.saveProducts(updated);
-              loadProducts();
-            }}
-            className={`text-xs font-bold hover:underline ${p.status === 'active' ? 'text-orange-500' : 'text-green-600'}`}
-          >
-            {p.status === 'active' ? 'Inativar' : 'Ativar'}
-          </button>
-          <button 
             onClick={() => handleOpenModal(p)}
             className="text-xs font-bold text-[#0052cc] hover:underline"
           >
@@ -282,10 +269,9 @@ export default function Products() {
         actions={
           <button 
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#0052cc] text-white rounded-xl text-xs md:text-sm font-bold hover:shadow-lg hover:shadow-[#0052cc]/20 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0052cc] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#0052cc]/20 hover:scale-[1.02] transition-all"
           >
-            <span className="hidden sm:inline">+ Novo Produto</span>
-            <span className="sm:hidden">+ Novo</span>
+            + Novo Produto
           </button>
         }
       />
@@ -304,13 +290,9 @@ export default function Products() {
             <div className="w-full sm:w-48">
               <Select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                 <option value="">Categorias</option>
-                <option value="SaaS">SaaS</option>
-                <option value="Consultoria">Consultoria</option>
-                <option value="IA">IA</option>
-                <option value="Operação">Operação</option>
-                <option value="Financeiro">Financeiro</option>
-                <option value="RH">RH</option>
-                <option value="Marketing">Marketing</option>
+                {['SaaS', 'Consultoria', 'IA', 'Operação', 'Financeiro', 'RH', 'Marketing'].map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </Select>
             </div>
             <div className="w-full sm:w-48">
@@ -512,7 +494,6 @@ export default function Products() {
                       <button type="button" onClick={() => logoInputRef.current?.click()} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
                         {formData.logoImageUrl ? 'Alterar Logo' : 'Selecionar Logo'}
                       </button>
-                      <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-tight">Ideal para ícones ou marcas quadradas.</p>
                     </div>
                   </div>
                 </FormField>
@@ -563,7 +544,7 @@ export default function Products() {
                 </div>
 
                 {formData.testimonial?.enabled && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                  <div className="space-y-4">
                     <FormField label="Estrelas">
                       <Select 
                         value={formData.testimonial.stars} 
@@ -600,13 +581,6 @@ export default function Products() {
                         />
                       </FormField>
                     </div>
-                    <FormField label="Empresa">
-                      <Input 
-                        value={formData.testimonial.company} 
-                        onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, company: e.target.value } })}
-                        placeholder="Ex: Varejo S.A."
-                      />
-                    </FormField>
                   </div>
                 )}
               </div>
