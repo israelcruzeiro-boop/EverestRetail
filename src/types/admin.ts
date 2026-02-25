@@ -35,7 +35,7 @@ export interface AdminProduct {
   ctaSecondaryLabel?: string;
 
   partnerId?: string;
-  imageUrl?: string; // Legacy field, keeping for compat
+  imageUrl?: string; 
   imageAlt?: string;
   createdAt: string;
   updatedAt?: string;
@@ -48,6 +48,7 @@ export interface AdminPartner {
   id: string;
   name: string;
   type: PartnerType;
+  logoUrl?: string; // Novo campo
   contactName: string;
   email: string;
   phone?: string;
