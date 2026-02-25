@@ -2,19 +2,17 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { storageService } from '../lib/storageService';
-import { HomeContentConfig, WeeklyHighlight, ContentArticle } from '../types/content';
+import { HomeContentConfig, WeeklyHighlight } from '../types/content';
 import { AdminProduct } from '../types/admin';
 
 export default function Home() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<HomeContentConfig>({ highlights: [], suggested: [], videocasts: [] });
   const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [articles, setArticles] = useState<ContentArticle[]>([]);
 
   const loadData = () => {
     setConfig(storageService.getHomeContent());
     setProducts(storageService.getProducts());
-    setArticles(storageService.getArticles());
   };
 
   useEffect(() => {
@@ -37,15 +35,11 @@ export default function Home() {
 
   const handleHighlightClick = (h: WeeklyHighlight) => {
     if (h.linkType === 'internal') {
-      if (h.contentId) {
-        const article = articles.find(a => a.id === h.contentId);
-        if (article) {
-          navigate(`/conteudo/${article.slug}`);
-          return;
-        }
+      if (h.slug) {
+        navigate(`/conteudo/${h.slug}`);
+      } else {
+        navigate(`/conteudo/${h.id}`);
       }
-      // Fallback para linkUrl manual se não houver contentId ligado
-      if (h.linkUrl) navigate(h.linkUrl);
     } else if (h.linkUrl) {
       window.open(h.linkUrl, '_blank');
     }
@@ -60,7 +54,6 @@ export default function Home() {
             src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" 
             alt="Hero" 
             className="absolute inset-0 w-full h-full object-cover opacity-50"
-            referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220] via-[#0B1220]/40 to-transparent"></div>
           

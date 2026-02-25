@@ -6,34 +6,20 @@ export interface ContentBlock {
   text: string;
 }
 
-export interface ContentArticle {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt?: string;
-  coverImageUrl?: string;
-  tags?: string[];
-  readingTime?: string;
-  authorName?: string;
-  publishedAt?: string;
-  status: 'draft' | 'published';
-  body: ContentBlock[];
-  createdAt: string;
-  updatedAt?: string;
-}
-
 export interface WeeklyHighlight {
   id: string;
   title: string;
+  slug?: string;
   tag: string;
   imageUrl: string;
   readTimeLabel?: string;
   ctaLabel?: string;
   linkType: 'internal' | 'external';
   linkUrl: string;
-  contentId?: string; // ID do artigo vinculado
   status: 'active' | 'inactive';
   order: number;
+  body?: ContentBlock[]; // Conteúdo integrado
+  authorName?: string;
 }
 
 export interface SuggestedProductBlock {
