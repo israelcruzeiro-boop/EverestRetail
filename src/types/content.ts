@@ -9,16 +9,18 @@ export interface ContentBlock {
 export interface WeeklyHighlight {
   id: string;
   title: string;
+  subtitle?: string; // Novo campo
   slug?: string;
   tag: string;
-  imageUrl: string;
+  imageUrl: string; // Miniatura do card
+  contentCoverUrl?: string; // Capa interna da publicação
   readTimeLabel?: string;
   ctaLabel?: string;
   linkType: 'internal' | 'external';
   linkUrl: string;
   status: 'active' | 'inactive';
   order: number;
-  body?: ContentBlock[]; // Conteúdo integrado
+  body?: ContentBlock[];
   authorName?: string;
 }
 
