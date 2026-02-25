@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminTopbar from '../../components/admin/AdminTopbar';
 import DataTable, { Column } from '../../components/admin/DataTable';
 import Modal from '../../components/admin/Modal';
@@ -70,7 +70,6 @@ export default function Content() {
     const newConfig = { ...currentConfig };
 
     if (activeTab === 'highlights') {
-      // Auto-gerar link se for artigo interno
       let finalUrl = highlightForm.linkUrl || '';
       if (highlightForm.linkType === 'internal' && highlightForm.contentId) {
         const art = articles.find(a => a.id === highlightForm.contentId);
@@ -136,7 +135,6 @@ export default function Content() {
     loadData();
   };
 
-  // Funções do Editor de Blocos de Artigo
   const addBlock = () => {
     setArticleForm({
       ...articleForm,
@@ -192,6 +190,64 @@ export default function Content() {
         <div className="flex justify-end gap-2">
           <button onClick={() => handleOpenModal(a)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
           <button onClick={() => handleDelete(a.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
+        </div>
+      )
+    }
+  ];
+
+  const suggestedColumns: Column<SuggestedProductBlock>[] = [
+    {
+      header: 'Produto',
+      accessor: (s) => {
+        const product = products.find(p => p.id === s.productId);
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-xs">📦</div>
+            <div>
+              <p className="font-bold text-slate-900">{s.customTitle || product?.name || 'Produto Indisponível'}</p>
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest">{product?.category || '-'}</p>
+            </div>
+          </div>
+        );
+      }
+    },
+    { header: 'Ordem', accessor: 'order' },
+    { header: 'Status', accessor: (s) => s.status === 'active' ? 'Ativo' : 'Inativo' },
+    {
+      header: 'Ações',
+      align: 'right',
+      accessor: (s) => (
+        <div className="flex justify-end gap-2">
+          <button onClick={() => handleOpenModal(s)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
+          <button onClick={() => handleDelete(s.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
+        </div>
+      )
+    }
+  ];
+
+  const videocastColumns: Column<VideoCast>[] = [
+    {
+      header: 'Vídeo-cast',
+      accessor: (v) => (
+        <div className="flex items-center gap-3">
+          <img src={v.thumbnailUrl} className="w-12 h-8 object-cover rounded" alt="" />
+          <div>
+            <p className="font-bold text-slate-900">{v.title}</p>
+            <p className="text-[10px] text-slate-400 uppercase font-black">{v.categoryLabel}</p>
+          </div>
+        </div>
+      )
+    },
+    { header: 'Palestrante', accessor: 'speakerLabel' },
+    { header: 'Ordem', accessor: 'order' },
+    { header: 'Status', accessor: (v) => v.status === 'active' ? 'Ativo' : 'Inativo' },
+    {
+      header: 'Ações',
+      align: 'right',
+      accessor: (v) => (
+        <div className="flex justify-end gap-2">
+          <button onClick={() => handleOpenModal(v)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
+          <button onClick={() => handleDelete(v.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
         </div>
       )
     }
@@ -253,11 +309,12 @@ export default function Content() {
           articles.length > 0 ? <DataTable data={articles} columns={articleColumns} /> : <EmptyState title="Nenhum artigo" description="Escreva artigos para serem vinculados aos destaques." icon="✍️" />
         )}
 
-        {/* Outras tabs mantidas para compatibilidade */}
-        {(activeTab === 'suggested' || activeTab === 'videocasts') && (
-          <div className="bg-white p-12 text-center rounded-2xl border border-slate-200">
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Gestão de {activeTab} disponível em breve nesta visão.</p>
-          </div>
+        {activeTab === 'suggested' && (
+          config.suggested.length > 0 ? <DataTable data={config.suggested.sort((a, b) => a.order - b.order)} columns={suggestedColumns} /> : <EmptyState title="Sem Sugestões" description="Selecione produtos para destacar na Home." icon="📦" />
+        )}
+
+        {activeTab === 'videocasts' && (
+          config.videocasts.length > 0 ? <DataTable data={config.videocasts.sort((a, b) => a.order - b.order)} columns={videocastColumns} /> : <EmptyState title="Sem Vídeos" description="Adicione seus vídeo-casts para a Home." icon="🎥" />
         )}
       </div>
 
@@ -304,6 +361,14 @@ export default function Content() {
             <FormField label="Capa do Card (URL)">
               <Input value={highlightForm.imageUrl} onChange={(e) => setHighlightForm({ ...highlightForm, imageUrl: e.target.value })} placeholder="https://..." />
             </FormField>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Texto do CTA">
+                <Input value={highlightForm.ctaLabel} onChange={(e) => setHighlightForm({ ...highlightForm, ctaLabel: e.target.value })} placeholder="Ler agora" />
+              </FormField>
+              <FormField label="Ordem">
+                <Input type="number" value={highlightForm.order} onChange={(e) => setHighlightForm({ ...highlightForm, order: parseInt(e.target.value) || 0 })} />
+              </FormField>
+            </div>
           </div>
         )}
 
@@ -385,6 +450,67 @@ export default function Content() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'suggested' && (
+          <div className="space-y-4">
+            <FormField label="Vincular Produto">
+              <Select value={suggestedForm.productId} onChange={(e) => setSuggestedForm({ ...suggestedForm, productId: e.target.value })}>
+                <option value="">Selecione um produto...</option>
+                {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.category})</option>)}
+              </Select>
+            </FormField>
+            <FormField label="Título Customizado (opcional)">
+              <Input value={suggestedForm.customTitle} onChange={(e) => setSuggestedForm({ ...suggestedForm, customTitle: e.target.value })} placeholder="Título que aparecerá no card..." />
+            </FormField>
+            <FormField label="Texto do Botão (CTA)">
+              <Input value={suggestedForm.customCta} onChange={(e) => setSuggestedForm({ ...suggestedForm, customCta: e.target.value })} placeholder="Saber mais" />
+            </FormField>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Ordem">
+                <Input type="number" value={suggestedForm.order} onChange={(e) => setSuggestedForm({ ...suggestedForm, order: parseInt(e.target.value) || 0 })} />
+              </FormField>
+              <FormField label="Status">
+                <Select value={suggestedForm.status} onChange={(e) => setSuggestedForm({ ...suggestedForm, status: e.target.value as any })}>
+                  <option value="active">Ativo</option>
+                  <option value="inactive">Inativo</option>
+                </Select>
+              </FormField>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'videocasts' && (
+          <div className="space-y-4">
+            <FormField label="Título do Vídeo">
+              <Input value={videocastForm.title} onChange={(e) => setVideocastForm({ ...videocastForm, title: e.target.value })} />
+            </FormField>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Categoria/Etiqueta">
+                <Input value={videocastForm.categoryLabel} onChange={(e) => setVideocastForm({ ...videocastForm, categoryLabel: e.target.value })} placeholder="Ex: PODCAST" />
+              </FormField>
+              <FormField label="Palestrante/Host">
+                <Input value={videocastForm.speakerLabel} onChange={(e) => setVideocastForm({ ...videocastForm, speakerLabel: e.target.value })} placeholder="Ex: João Silva" />
+              </FormField>
+            </div>
+            <FormField label="Thumbnail (URL)">
+              <Input value={videocastForm.thumbnailUrl} onChange={(e) => setVideocastForm({ ...videocastForm, thumbnailUrl: e.target.value })} placeholder="https://..." />
+            </FormField>
+            <FormField label="URL do Vídeo (YouTube/Vimeo)">
+              <Input value={videocastForm.videoUrl} onChange={(e) => setVideocastForm({ ...videocastForm, videoUrl: e.target.value })} placeholder="https://youtube.com/..." />
+            </FormField>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Ordem">
+                <Input type="number" value={videocastForm.order} onChange={(e) => setVideocastForm({ ...videocastForm, order: parseInt(e.target.value) || 0 })} />
+              </FormField>
+              <FormField label="Status">
+                <Select value={videocastForm.status} onChange={(e) => setVideocastForm({ ...videocastForm, status: e.target.value as any })}>
+                  <option value="active">Ativo</option>
+                  <option value="inactive">Inativo</option>
+                </Select>
+              </FormField>
             </div>
           </div>
         )}
