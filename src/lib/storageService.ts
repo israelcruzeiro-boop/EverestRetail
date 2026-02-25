@@ -95,7 +95,6 @@ export const storageService = {
   },
 
   seedInitialData() {
-    // Seed Users
     const currentUsers = this.getUsers();
     const hasAdmin = currentUsers.some(u => u.email === 'admin@email.com');
     const hasUser = currentUsers.some(u => u.email === 'user@email.com');
@@ -106,6 +105,7 @@ export const storageService = {
         id: 'u-admin',
         name: 'Admin Master',
         email: 'admin@email.com',
+        password: '123456',
         role: 'admin',
         status: 'active',
         createdAt: new Date().toISOString()
@@ -116,6 +116,7 @@ export const storageService = {
         id: 'u-viewer',
         name: 'Usuário Padrão',
         email: 'user@email.com',
+        password: '123456',
         role: 'viewer',
         status: 'active',
         createdAt: new Date().toISOString()
@@ -126,7 +127,6 @@ export const storageService = {
       this.saveUsers(newUsers);
     }
 
-    // Seed Products if empty
     if (this.getProducts().length === 0) {
       this.saveProducts([{
         id: '1', name: 'Checkii+', category: 'SaaS', priceCents: 29900, status: 'active',

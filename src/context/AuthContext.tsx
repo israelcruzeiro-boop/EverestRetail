@@ -6,8 +6,8 @@ interface AuthContextType {
   user: AdminUser | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (email: string) => Promise<AdminUser>;
-  signup: (name: string, email: string) => Promise<AdminUser>;
+  login: (email: string, password?: string) => Promise<AdminUser>;
+  signup: (name: string, email: string, password?: string) => Promise<AdminUser>;
   logout: () => void;
 }
 
@@ -24,12 +24,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'admin';
 
-  const login = async (email: string): Promise<AdminUser> => {
+  const login = async (email: string, password?: string): Promise<AdminUser> => {
     const users = storageService.getUsers();
     const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
     if (!found) {
       throw new Error('Usuário não encontrado.');
+    }
+
+    if (found.password && found.password !== password) {
+      throw new Error('Senha incorreta.');
     }
 
     if (found.status !== 'active') {
@@ -41,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return found;
   };
 
-  const signup = async (name: string, email: string): Promise<AdminUser> => {
+  const signup = async (name: string, email: string, password?: string): Promise<AdminUser> => {
     const users = storageService.getUsers();
     const alreadyExists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
 
@@ -53,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: Math.random().toString(36).substr(2, 9),
       name,
       email,
+      password,
       role: 'viewer',
       status: 'active',
       createdAt: new Date().toISOString(),

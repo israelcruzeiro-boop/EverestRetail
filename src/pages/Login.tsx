@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Login() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,13 @@ export default function Login() {
     try {
       let user;
       if (mode === 'login') {
-        user = await login(email);
+        user = await login(email, password);
         analytics.track('login');
       } else {
-        user = await signup(name, email);
+        user = await signup(name, email, password);
         analytics.track('publication_request_created', { action: 'signup' });
       }
 
-      // Redirecionamento baseado em role
       if (user.role === 'admin') {
         navigate('/admin', { replace: true });
       } else {
@@ -69,13 +69,13 @@ export default function Login() {
 
           <div className="flex bg-slate-50 p-1 rounded-2xl mb-8">
             <button 
-              onClick={() => setMode('login')}
+              onClick={() => { setMode('login'); setError(''); }}
               className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'login' ? 'bg-white text-[#1D4ED8] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
               Entrar
             </button>
             <button 
-              onClick={() => setMode('signup')}
+              onClick={() => { setMode('signup'); setError(''); }}
               className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${mode === 'signup' ? 'bg-white text-[#1D4ED8] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
               Criar Conta
@@ -115,6 +115,18 @@ export default function Login() {
               />
             </div>
 
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Senha</label>
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1D4ED8] focus:bg-white outline-none transition-all text-sm"
+                placeholder="••••••••"
+              />
+            </div>
+
             {error && (
               <p className="text-[10px] font-bold text-red-500 uppercase tracking-tight text-center">
                 {error}
@@ -131,8 +143,7 @@ export default function Login() {
 
           <div className="mt-8 text-center">
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-              Dica: Use <span className="text-slate-900">admin@email.com</span> para painel admin<br/>
-              ou <span className="text-slate-900">user@email.com</span> para painel de usuário.
+              Senha padrão: <span className="text-slate-900">123456</span>
             </p>
           </div>
         </div>

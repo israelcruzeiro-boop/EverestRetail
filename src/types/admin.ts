@@ -48,7 +48,7 @@ export interface AdminPartner {
   id: string;
   name: string;
   type: PartnerType;
-  logoUrl?: string; // Novo campo
+  logoUrl?: string; 
   contactName: string;
   email: string;
   phone?: string;
@@ -63,6 +63,7 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  password?: string; // Campo adicionado
   role: UserRole;
   status: UserStatus;
   createdAt: string;
