@@ -44,8 +44,9 @@ export default function Home() {
           return;
         }
       }
-      navigate(h.linkUrl);
-    } else {
+      // Fallback para linkUrl manual se não houver contentId ligado
+      if (h.linkUrl) navigate(h.linkUrl);
+    } else if (h.linkUrl) {
       window.open(h.linkUrl, '_blank');
     }
   };
@@ -56,7 +57,7 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
         <div className="relative h-[320px] md:h-[400px] flex items-center overflow-hidden bg-[#0B1220] rounded-2xl md:rounded-3xl">
           <img 
-            src="https://picsum.photos/seed/business/1200/600" 
+            src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" 
             alt="Hero" 
             className="absolute inset-0 w-full h-full object-cover opacity-50"
             referrerPolicy="no-referrer"

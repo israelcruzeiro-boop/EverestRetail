@@ -9,7 +9,7 @@ import { WeeklyHighlight, SuggestedProductBlock, VideoCast, HomeContentConfig, C
 import { AdminProduct } from '../../types/admin';
 import { formatDateBR } from '../../lib/format';
 
-type Tab = 'highlights' | 'suggested' | 'videocasts' | 'articles';
+type Tab = 'highlights' | 'articles' | 'suggested' | 'videocasts';
 
 export default function Content() {
   const [activeTab, setActiveTab] = useState<Tab>('highlights');
@@ -18,8 +18,6 @@ export default function Content() {
   const [articles, setArticles] = useState<ContentArticle[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form States
   const [highlightForm, setHighlightForm] = useState<Partial<WeeklyHighlight>>({
@@ -59,7 +57,10 @@ export default function Content() {
     } else if (activeTab === 'videocasts') {
       setVideocastForm(item || { title: '', categoryLabel: '', description: '', thumbnailUrl: '', videoUrl: '', speakerLabel: '', status: 'active', order: config.videocasts.length + 1 });
     } else if (activeTab === 'articles') {
-      setArticleForm(item || { title: '', slug: '', excerpt: '', coverImageUrl: '', readingTime: '', authorName: '', tags: [], status: 'published', body: [{ id: '1', type: 'paragraph', text: '' }] });
+      setArticleForm(item || { 
+        title: '', slug: '', excerpt: '', coverImageUrl: '', readingTime: '', authorName: '', tags: [], status: 'published', 
+        body: [{ id: Math.random().toString(36).substr(2, 9), type: 'paragraph', text: '' }] 
+      });
     }
     setIsModalOpen(true);
   };
@@ -69,8 +70,8 @@ export default function Content() {
     const newConfig = { ...currentConfig };
 
     if (activeTab === 'highlights') {
-      // Auto-generate link if internal article is selected
-      let finalUrl = highlightForm.linkUrl;
+      // Auto-gerar link se for artigo interno
+      let finalUrl = highlightForm.linkUrl || '';
       if (highlightForm.linkType === 'internal' && highlightForm.contentId) {
         const art = articles.find(a => a.id === highlightForm.contentId);
         if (art) finalUrl = `/conteudo/${art.slug}`;
@@ -81,22 +82,6 @@ export default function Content() {
         newConfig.highlights = newConfig.highlights.map(h => h.id === editingItem.id ? item : h);
       } else {
         newConfig.highlights.push(item);
-      }
-      storageService.saveHomeContent(newConfig);
-    } else if (activeTab === 'suggested') {
-      const item = { ...suggestedForm, id: editingItem?.id || Math.random().toString(36).substr(2, 9) } as SuggestedProductBlock;
-      if (editingItem) {
-        newConfig.suggested = newConfig.suggested.map(s => s.id === editingItem.id ? item : s);
-      } else {
-        newConfig.suggested.push(item);
-      }
-      storageService.saveHomeContent(newConfig);
-    } else if (activeTab === 'videocasts') {
-      const item = { ...videocastForm, id: editingItem?.id || Math.random().toString(36).substr(2, 9) } as VideoCast;
-      if (editingItem) {
-        newConfig.videocasts = newConfig.videocasts.map(v => v.id === editingItem.id ? item : v);
-      } else {
-        newConfig.videocasts.push(item);
       }
       storageService.saveHomeContent(newConfig);
     } else if (activeTab === 'articles') {
@@ -115,6 +100,22 @@ export default function Content() {
       } else {
         storageService.saveArticles([...allArticles, item]);
       }
+    } else if (activeTab === 'suggested') {
+      const item = { ...suggestedForm, id: editingItem?.id || Math.random().toString(36).substr(2, 9) } as SuggestedProductBlock;
+      if (editingItem) {
+        newConfig.suggested = newConfig.suggested.map(s => s.id === editingItem.id ? item : s);
+      } else {
+        newConfig.suggested.push(item);
+      }
+      storageService.saveHomeContent(newConfig);
+    } else if (activeTab === 'videocasts') {
+      const item = { ...videocastForm, id: editingItem?.id || Math.random().toString(36).substr(2, 9) } as VideoCast;
+      if (editingItem) {
+        newConfig.videocasts = newConfig.videocasts.map(v => v.id === editingItem.id ? item : v);
+      } else {
+        newConfig.videocasts.push(item);
+      }
+      storageService.saveHomeContent(newConfig);
     }
 
     loadData();
@@ -122,7 +123,7 @@ export default function Content() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('Tem certeza?')) return;
+    if (!confirm('Tem certeza que deseja excluir?')) return;
     if (activeTab === 'articles') {
       storageService.saveArticles(articles.filter(a => a.id !== id));
     } else {
@@ -135,7 +136,7 @@ export default function Content() {
     loadData();
   };
 
-  // Article Body Editor Helpers
+  // Funções do Editor de Blocos de Artigo
   const addBlock = () => {
     setArticleForm({
       ...articleForm,
@@ -169,9 +170,9 @@ export default function Content() {
     {
       header: 'Título',
       accessor: (a) => (
-        <div>
+        <div className="flex flex-col">
           <p className="font-bold text-slate-900">{a.title}</p>
-          <p className="text-[10px] text-slate-400 font-mono">{a.slug}</p>
+          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-tighter">{a.slug}</span>
         </div>
       )
     },
@@ -183,7 +184,7 @@ export default function Content() {
         </span>
       )
     },
-    { header: 'Data', accessor: (a) => formatDateBR(a.createdAt) },
+    { header: 'Criado em', accessor: (a) => formatDateBR(a.createdAt) },
     {
       header: 'Ações',
       align: 'right',
@@ -199,7 +200,7 @@ export default function Content() {
   return (
     <>
       <AdminTopbar title="Gestão de Conteúdo (CMS)" actions={
-        <button onClick={() => handleOpenModal()} className="px-3 md:px-4 py-2 bg-[#1D4ED8] text-white rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-[#1D4ED8]/20">
+        <button onClick={() => handleOpenModal()} className="px-4 py-2 bg-[#1D4ED8] text-white rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-[#1D4ED8]/20 transition-all hover:scale-[1.02]">
           + Novo Item
         </button>
       } />
@@ -217,49 +218,58 @@ export default function Content() {
           ))}
         </div>
 
-        {activeTab === 'highlights' && <DataTable data={config.highlights.sort((a, b) => a.order - b.order)} columns={[
-          {
-            header: 'Destaque',
-            accessor: (h) => (
-              <div className="flex items-center gap-3">
-                <img src={h.imageUrl} className="w-12 h-8 object-cover rounded" alt="" />
-                <div>
-                  <p className="font-bold text-slate-900">{h.title}</p>
-                  <span className="text-[10px] font-black text-[#1D4ED8] uppercase tracking-widest">{h.tag}</span>
-                </div>
-              </div>
-            )
-          },
-          { header: 'Tipo', accessor: (h) => h.linkType === 'internal' ? 'Interno (Artigo)' : 'Externo (URL)' },
-          { header: 'Status', accessor: (h) => h.status === 'active' ? 'Ativo' : 'Inativo' },
-          {
-            header: 'Ações',
-            align: 'right',
-            accessor: (h) => (
-              <div className="flex justify-end gap-2">
-                <button onClick={() => handleOpenModal(h)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
-                <button onClick={() => handleDelete(h.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
-              </div>
-            )
-          }
-        ]} />}
-
-        {activeTab === 'articles' && (
-          articles.length > 0 ? <DataTable data={articles} columns={articleColumns} /> : <EmptyState title="Nenhum artigo" description="Crie seu primeiro artigo para os destaques." icon="✍️" />
+        {activeTab === 'highlights' && (
+          config.highlights.length > 0 ? (
+            <DataTable data={config.highlights.sort((a, b) => a.order - b.order)} columns={[
+              {
+                header: 'Destaque',
+                accessor: (h) => (
+                  <div className="flex items-center gap-3">
+                    <img src={h.imageUrl} className="w-12 h-8 object-cover rounded border border-slate-100" alt="" />
+                    <div>
+                      <p className="font-bold text-slate-900">{h.title}</p>
+                      <span className="text-[10px] font-black text-[#1D4ED8] uppercase tracking-widest">{h.tag}</span>
+                    </div>
+                  </div>
+                )
+              },
+              { header: 'Tipo', accessor: (h) => h.linkType === 'internal' ? 'Interno (Artigo)' : 'Externo (URL)' },
+              { header: 'Status', accessor: (h) => h.status === 'active' ? 'Ativo' : 'Inativo' },
+              {
+                header: 'Ações',
+                align: 'right',
+                accessor: (h) => (
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => handleOpenModal(h)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
+                    <button onClick={() => handleDelete(h.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
+                  </div>
+                )
+              }
+            ]} />
+          ) : <EmptyState title="Nenhum destaque" description="Adicione seu primeiro destaque para a Home." icon="✨" />
         )}
 
-        {/* Other tabs omitted for brevity in UI if not requested specific changes, but keeping logic */}
+        {activeTab === 'articles' && (
+          articles.length > 0 ? <DataTable data={articles} columns={articleColumns} /> : <EmptyState title="Nenhum artigo" description="Escreva artigos para serem vinculados aos destaques." icon="✍️" />
+        )}
+
+        {/* Outras tabs mantidas para compatibilidade */}
+        {(activeTab === 'suggested' || activeTab === 'videocasts') && (
+          <div className="bg-white p-12 text-center rounded-2xl border border-slate-200">
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Gestão de {activeTab} disponível em breve nesta visão.</p>
+          </div>
+        )}
       </div>
 
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title={editingItem ? 'Editar' : 'Novo'}
+        title={editingItem ? 'Editar Item' : 'Novo Item'}
         size={activeTab === 'articles' ? 'xl' : 'lg'}
         footer={
           <div className="flex justify-end gap-3 w-full">
             <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-slate-500">Cancelar</button>
-            <button onClick={handleSave} className="px-6 py-2 bg-[#1D4ED8] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#1D4ED8]/20">Salvar Alterações</button>
+            <button onClick={handleSave} className="px-6 py-2 bg-[#1D4ED8] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#1D4ED8]/20 transition-all hover:scale-[1.02]">Salvar Alterações</button>
           </div>
         }
       >
@@ -288,11 +298,11 @@ export default function Content() {
               </FormField>
             ) : (
               <FormField label="URL Externa">
-                <Input value={highlightForm.linkUrl} onChange={(e) => setHighlightForm({ ...highlightForm, linkUrl: e.target.value })} />
+                <Input value={highlightForm.linkUrl} onChange={(e) => setHighlightForm({ ...highlightForm, linkUrl: e.target.value })} placeholder="https://..." />
               </FormField>
             )}
-            <FormField label="Capa do Card">
-              <Input value={highlightForm.imageUrl} onChange={(e) => setHighlightForm({ ...highlightForm, imageUrl: e.target.value })} placeholder="URL da imagem" />
+            <FormField label="Capa do Card (URL)">
+              <Input value={highlightForm.imageUrl} onChange={(e) => setHighlightForm({ ...highlightForm, imageUrl: e.target.value })} placeholder="https://..." />
             </FormField>
           </div>
         )}
@@ -300,12 +310,29 @@ export default function Content() {
         {activeTab === 'articles' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-1 space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Metadados</h3>
-              <FormField label="Título"><Input value={articleForm.title} onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })} /></FormField>
-              <FormField label="Slug"><Input value={articleForm.slug} onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })} /></FormField>
-              <FormField label="Autor"><Input value={articleForm.authorName} onChange={(e) => setArticleForm({ ...articleForm, authorName: e.target.value })} /></FormField>
-              <FormField label="Tempo de Leitura"><Input value={articleForm.readingTime} onChange={(e) => setArticleForm({ ...articleForm, readingTime: e.target.value })} /></FormField>
-              <FormField label="Capa (URL)"><Input value={articleForm.coverImageUrl} onChange={(e) => setArticleForm({ ...articleForm, coverImageUrl: e.target.value })} /></FormField>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-100 pb-2">Metadados</h3>
+              <FormField label="Título">
+                <Input value={articleForm.title} onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })} placeholder="Título chamativo..." />
+              </FormField>
+              <FormField label="Slug">
+                <Input value={articleForm.slug} onChange={(e) => setArticleForm({ ...articleForm, slug: e.target.value })} placeholder="auto-gerado-se-vazio" />
+              </FormField>
+              <FormField label="Autor">
+                <Input value={articleForm.authorName} onChange={(e) => setArticleForm({ ...articleForm, authorName: e.target.value })} placeholder="Nome do autor..." />
+              </FormField>
+              <FormField label="Tempo de Leitura">
+                <Input value={articleForm.readingTime} onChange={(e) => setArticleForm({ ...articleForm, readingTime: e.target.value })} placeholder="Ex: 5 min leitura" />
+              </FormField>
+              <FormField label="Tags (separadas por vírgula)">
+                <Input 
+                  value={articleForm.tags?.join(', ')} 
+                  onChange={(e) => setArticleForm({ ...articleForm, tags: e.target.value.split(',').map(t => t.trim().toUpperCase()).filter(Boolean) })} 
+                  placeholder="IA, VAREJO, DADOS"
+                />
+              </FormField>
+              <FormField label="Capa (URL)">
+                <Input value={articleForm.coverImageUrl} onChange={(e) => setArticleForm({ ...articleForm, coverImageUrl: e.target.value })} placeholder="https://..." />
+              </FormField>
               <FormField label="Status">
                 <Select value={articleForm.status} onChange={(e) => setArticleForm({ ...articleForm, status: e.target.value as any })}>
                   <option value="draft">Rascunho</option>
@@ -315,7 +342,7 @@ export default function Content() {
             </div>
             
             <div className="md:col-span-2 space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Conteúdo (Editor de Blocos)</h3>
                 <button onClick={addBlock} className="text-xs font-bold text-[#1D4ED8] hover:underline">+ Adicionar Bloco</button>
               </div>
@@ -324,20 +351,22 @@ export default function Content() {
                 {articleForm.body?.map((block, idx) => (
                   <div key={block.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative group">
                     <div className="flex items-center justify-between gap-4">
-                      <Select 
-                        className="w-32 h-8 text-[10px] font-black" 
-                        value={block.type} 
-                        onChange={(e) => updateBlock(block.id, 'type', e.target.value)}
-                      >
-                        <option value="paragraph">Parágrafo</option>
-                        <option value="heading">Título</option>
-                        <option value="quote">Citação</option>
-                        <option value="bullet">Bullet</option>
-                      </Select>
+                      <div className="flex items-center gap-2">
+                        <Select 
+                          className="w-32 h-8 text-[10px] font-black" 
+                          value={block.type} 
+                          onChange={(e) => updateBlock(block.id, 'type', e.target.value as any)}
+                        >
+                          <option value="paragraph">Parágrafo</option>
+                          <option value="heading">Título (H2)</option>
+                          <option value="quote">Citação</option>
+                          <option value="bullet">Marcador (Bullet)</option>
+                        </Select>
+                      </div>
                       <div className="flex gap-1">
-                        <button onClick={() => moveBlock(idx, 'up')} className="p-1 text-slate-400 hover:text-[#1D4ED8]">↑</button>
-                        <button onClick={() => moveBlock(idx, 'down')} className="p-1 text-slate-400 hover:text-[#1D4ED8]">↓</button>
-                        <button onClick={() => removeBlock(block.id)} className="p-1 text-slate-400 hover:text-red-500">✕</button>
+                        <button onClick={() => moveBlock(idx, 'up')} className="p-1 text-slate-400 hover:text-[#1D4ED8] transition-colors" title="Subir">↑</button>
+                        <button onClick={() => moveBlock(idx, 'down')} className="p-1 text-slate-400 hover:text-[#1D4ED8] transition-colors" title="Descer">↓</button>
+                        <button onClick={() => removeBlock(block.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Remover">✕</button>
                       </div>
                     </div>
                     <Textarea 
@@ -345,10 +374,16 @@ export default function Content() {
                       className="bg-white"
                       value={block.text}
                       onChange={(e) => updateBlock(block.id, 'text', e.target.value)}
-                      placeholder="Digite o conteúdo do bloco..."
+                      placeholder="Digite o conteúdo aqui..."
                     />
                   </div>
                 ))}
+
+                {(!articleForm.body || articleForm.body.length === 0) && (
+                  <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <button onClick={addBlock} className="text-sm font-bold text-[#1D4ED8]">+ Começar a escrever</button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

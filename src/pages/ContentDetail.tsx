@@ -25,7 +25,10 @@ export default function ContentDetail() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-black text-slate-900 mb-4">Conteúdo não encontrado</h2>
-        <button onClick={() => navigate('/')} className="text-[#1D4ED8] font-bold hover:underline">
+        <button 
+          onClick={() => navigate('/')} 
+          className="text-[#1D4ED8] font-bold hover:underline"
+        >
           Voltar para Home
         </button>
       </div>
@@ -88,7 +91,7 @@ export default function ContentDetail() {
             {article.body.map((block) => {
               switch (block.type) {
                 case 'heading':
-                  return <h2 key={block.id} className="text-2xl font-black text-[#0B1220] tracking-tight">{block.text}</h2>;
+                  return <h2 key={block.id} className="text-2xl font-black text-[#0B1220] tracking-tight mt-12">{block.text}</h2>;
                 case 'paragraph':
                   return <p key={block.id} className="text-lg text-slate-600 leading-relaxed">{block.text}</p>;
                 case 'quote':
@@ -110,17 +113,15 @@ export default function ContentDetail() {
             })}
           </div>
 
-          <div className="mt-20 pt-10 border-t border-slate-100">
-            <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center">
-              <h4 className="text-lg font-black text-[#0B1220] mb-2">Gostou deste conteúdo?</h4>
-              <p className="text-slate-500 text-sm mb-6">Explore soluções que ajudam você a implementar estas estratégias hoje mesmo.</p>
-              <button 
-                onClick={() => navigate('/marketplace')}
-                className="bg-[#1D4ED8] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-[#1D4ED8]/20 hover:scale-[1.02] transition-all"
-              >
-                Ver Marketplace
-              </button>
-            </div>
+          <div className="mt-20 pt-10 border-t border-slate-100 text-center">
+            <h4 className="text-lg font-black text-[#0B1220] mb-2">Gostou deste conteúdo?</h4>
+            <p className="text-slate-500 text-sm mb-8">Explore soluções que ajudam você a implementar estas estratégias hoje mesmo.</p>
+            <button 
+              onClick={() => navigate('/marketplace')}
+              className="bg-[#1D4ED8] text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#1D4ED8]/20 hover:scale-[1.02] transition-all"
+            >
+              Explorar Marketplace
+            </button>
           </div>
         </div>
       </article>
