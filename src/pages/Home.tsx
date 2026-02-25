@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { storageService } from '../lib/storageService';
-import { HomeContentConfig, WeeklyHighlight } from '../types/content';
+import { HomeContentConfig, WeeklyHighlight, VideoCast } from '../types/content';
 import { AdminProduct } from '../types/admin';
+import VideoModal from '../components/VideoModal';
 
 export default function Home() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<HomeContentConfig>({ highlights: [], suggested: [], videocasts: [] });
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<VideoCast | null>(null);
 
   const loadData = () => {
     setConfig(storageService.getHomeContent());
@@ -196,7 +198,7 @@ export default function Home() {
               >
                 <div 
                   className="relative aspect-video rounded-2xl overflow-hidden bg-[#0B1220] cursor-pointer mb-5 shadow-sm border border-slate-100"
-                  onClick={() => window.open(v.videoUrl, '_blank')}
+                  onClick={() => setSelectedVideo(v)}
                 >
                   <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -225,6 +227,14 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Video Playback Modal */}
+      <VideoModal 
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+        videoUrl={selectedVideo?.videoUrl || ''}
+        title={selectedVideo?.title || ''}
+      />
     </div>
   );
 }
