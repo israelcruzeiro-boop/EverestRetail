@@ -36,15 +36,9 @@ export default function Home() {
     .sort((a, b) => a.order - b.order);
 
   const handleHighlightClick = (h: WeeklyHighlight) => {
-    if (h.linkType === 'internal') {
-      if (h.slug) {
-        navigate(`/conteudo/${h.slug}`);
-      } else {
-        navigate(`/conteudo/${h.id}`);
-      }
-    } else if (h.linkUrl) {
-      window.open(h.linkUrl, '_blank');
-    }
+    // Sempre navegar para a página de conteúdo interno usando o slug ou ID
+    const target = h.slug || h.id;
+    navigate(`/conteudo/${target}`);
   };
 
   return (
@@ -122,12 +116,14 @@ export default function Home() {
                   <h4 className="text-lg font-bold text-[#0B1220] mb-3 leading-tight group-hover:text-[#1D4ED8] transition-colors">
                     {h.title}
                   </h4>
-                  <span className="text-xs font-black text-[#1D4ED8] uppercase tracking-widest flex items-center gap-1.5">
-                    {h.ctaLabel || 'Ler agora'}
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black text-[#1D4ED8] uppercase tracking-widest">
+                      {h.ctaLabel || 'Ler agora'}
+                    </span>
+                    <svg className="w-3 h-3 text-[#1D4ED8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
-                  </span>
+                  </div>
                 </div>
               </motion.div>
             ))}
