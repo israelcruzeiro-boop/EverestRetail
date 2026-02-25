@@ -13,12 +13,10 @@ const KEYS = {
 };
 
 export const storageService = {
-  // ... (métodos existentes permanecem iguais)
   getProducts(): AdminProduct[] {
     try {
       const data = localStorage.getItem(KEYS.PRODUCTS);
-      if (!data) return [];
-      return JSON.parse(data);
+      return data ? JSON.parse(data) : [];
     } catch (e) { return []; }
   },
   saveProducts(products: AdminProduct[]) {
@@ -97,6 +95,38 @@ export const storageService = {
   },
 
   seedInitialData() {
+    // Seed Users
+    const currentUsers = this.getUsers();
+    const hasAdmin = currentUsers.some(u => u.email === 'admin@email.com');
+    const hasUser = currentUsers.some(u => u.email === 'user@email.com');
+
+    const newUsers = [...currentUsers];
+    if (!hasAdmin) {
+      newUsers.push({
+        id: 'u-admin',
+        name: 'Admin Master',
+        email: 'admin@email.com',
+        role: 'admin',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      });
+    }
+    if (!hasUser) {
+      newUsers.push({
+        id: 'u-viewer',
+        name: 'Usuário Padrão',
+        email: 'user@email.com',
+        role: 'viewer',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    if (!hasAdmin || !hasUser) {
+      this.saveUsers(newUsers);
+    }
+
+    // Seed Products if empty
     if (this.getProducts().length === 0) {
       this.saveProducts([{
         id: '1', name: 'Checkii+', category: 'SaaS', priceCents: 29900, status: 'active',
@@ -105,9 +135,6 @@ export const storageService = {
         benefits: [{ id: 'b1', text: 'Digitalização de processos' }],
         createdAt: new Date().toISOString(),
       }]);
-    }
-    if (this.getUsers().length === 0) {
-      this.saveUsers([{ id: 'u1', name: 'Admin', email: 'admin@ent.com', role: 'admin', status: 'active', createdAt: new Date().toISOString() }]);
     }
   },
 

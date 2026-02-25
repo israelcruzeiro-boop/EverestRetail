@@ -11,6 +11,7 @@ import Checkout from './pages/Checkout';
 import Schedule from './pages/Schedule';
 import RequestPublication from './pages/RequestPublication';
 import ContentDetail from './pages/ContentDetail';
+import UserPanel from './pages/UserPanel';
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -20,6 +21,10 @@ import AdminPartners from './pages/admin/Partners';
 import AdminUsers from './pages/admin/Users';
 import AdminSettings from './pages/admin/Settings';
 import AdminContent from './pages/admin/Content';
+
+// Guards
+import RequireAuth from './components/guards/RequireAuth';
+import RequireAdmin from './components/guards/RequireAdmin';
 
 export default function App() {
   useEffect(() => {
@@ -37,13 +42,16 @@ export default function App() {
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />
-            <Route path="checkout/:id" element={<Checkout />} />
-            <Route path="schedule/:id" element={<Schedule />} />
-            <Route path="request-publication" element={<RequestPublication />} />
+            
+            {/* Protected User Routes */}
+            <Route path="painel" element={<RequireAuth><UserPanel /></RequireAuth>} />
+            <Route path="checkout/:id" element={<RequireAuth><Checkout /></RequireAuth>} />
+            <Route path="schedule/:id" element={<RequireAuth><Schedule /></RequireAuth>} />
+            <Route path="request-publication" element={<RequireAuth><RequestPublication /></RequireAuth>} />
           </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+          {/* Admin Routes - Highly Protected */}
+          <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="partners" element={<AdminPartners />} />

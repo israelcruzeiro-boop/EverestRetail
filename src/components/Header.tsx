@@ -4,13 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { path: '/', label: 'Novidades' },
+    { path: '/', label: 'Home' },
     { path: '/marketplace', label: 'Marketplace' },
-    { path: '/request-publication', label: 'Publicar' },
   ];
 
   return (
@@ -30,15 +29,23 @@ export default function Header() {
             <Link 
               key={link.path} 
               to={link.path} 
-              className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-[#1D4ED8] transition-colors"
+              className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#1D4ED8] transition-colors"
             >
               {link.label}
             </Link>
           ))}
           {isAuthenticated && (
             <Link 
+              to="/painel" 
+              className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#1D4ED8] transition-colors"
+            >
+              Meu Painel
+            </Link>
+          )}
+          {isAdmin && (
+            <Link 
               to="/admin" 
-              className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-[#1D4ED8] transition-colors"
+              className="text-[10px] font-black uppercase tracking-widest text-[#1D4ED8] hover:text-[#1D4ED8]/80 transition-colors"
             >
               Admin
             </Link>
@@ -48,16 +55,21 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <div className="hidden sm:block">
             {isAuthenticated ? (
-              <button 
-                onClick={logout}
-                className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors"
-              >
-                Sair
-              </button>
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                  Olá, {user?.name.split(' ')[0]}
+                </span>
+                <button 
+                  onClick={logout}
+                  className="text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-500 transition-colors"
+                >
+                  Sair
+                </button>
+              </div>
             ) : (
               <Link 
                 to="/login"
-                className="bg-[#1D4ED8] text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-[#1D4ED8]/90 transition-colors"
+                className="bg-[#1D4ED8] text-white px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-[#1D4ED8]/90 transition-colors shadow-lg shadow-[#1D4ED8]/20"
               >
                 Entrar
               </Link>
@@ -97,25 +109,34 @@ export default function Header() {
                   key={link.path} 
                   to={link.path} 
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm font-bold uppercase tracking-wider text-[#0B1220]"
+                  className="block text-sm font-black uppercase tracking-wider text-[#0B1220]"
                 >
                   {link.label}
                 </Link>
               ))}
               {isAuthenticated && (
                 <Link 
+                  to="/painel" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm font-black uppercase tracking-wider text-[#0B1220]"
+                >
+                  Meu Painel
+                </Link>
+              )}
+              {isAdmin && (
+                <Link 
                   to="/admin" 
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm font-bold uppercase tracking-wider text-[#0B1220]"
+                  className="block text-sm font-black uppercase tracking-wider text-[#1D4ED8]"
                 >
-                  Admin
+                  Administração
                 </Link>
               )}
               <div className="pt-4 border-t border-slate-100">
                 {isAuthenticated ? (
                   <button 
                     onClick={() => { logout(); setIsMenuOpen(false); }}
-                    className="w-full text-left text-sm font-bold text-red-500 uppercase tracking-widest"
+                    className="w-full text-left text-sm font-black text-red-500 uppercase tracking-widest"
                   >
                     Sair da conta
                   </button>
@@ -123,7 +144,7 @@ export default function Header() {
                   <Link 
                     to="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="block w-full text-center bg-[#1D4ED8] text-white py-3 rounded-xl font-bold"
+                    className="block w-full text-center bg-[#1D4ED8] text-white py-3 rounded-xl font-black uppercase tracking-widest"
                   >
                     Entrar
                   </Link>
