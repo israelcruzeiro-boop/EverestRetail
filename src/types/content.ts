@@ -1,3 +1,27 @@
+export type ContentBlockType = 'paragraph' | 'heading' | 'quote' | 'bullet';
+
+export interface ContentBlock {
+  id: string;
+  type: ContentBlockType;
+  text: string;
+}
+
+export interface ContentArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImageUrl?: string;
+  tags?: string[];
+  readingTime?: string;
+  authorName?: string;
+  publishedAt?: string;
+  status: 'draft' | 'published';
+  body: ContentBlock[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface WeeklyHighlight {
   id: string;
   title: string;
@@ -7,6 +31,7 @@ export interface WeeklyHighlight {
   ctaLabel?: string;
   linkType: 'internal' | 'external';
   linkUrl: string;
+  contentId?: string; // ID do artigo vinculado
   status: 'active' | 'inactive';
   order: number;
 }

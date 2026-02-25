@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Checkout from './pages/Checkout';
 import Schedule from './pages/Schedule';
 import RequestPublication from './pages/RequestPublication';
+import ContentDetail from './pages/ContentDetail';
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -34,6 +35,7 @@ export default function App() {
             <Route index element={<Home />} />
             <Route path="marketplace" element={<Marketplace />} />
             <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />
             <Route path="checkout/:id" element={<Checkout />} />
             <Route path="schedule/:id" element={<Schedule />} />

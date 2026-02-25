@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { storageService } from '../lib/storageService';
-import { HomeContentConfig, WeeklyHighlight } from '../types/content';
+import { HomeContentConfig, WeeklyHighlight, ContentArticle } from '../types/content';
 import { AdminProduct } from '../types/admin';
 
 export default function Home() {
   const navigate = useNavigate();
   const [config, setConfig] = useState<HomeContentConfig>({ highlights: [], suggested: [], videocasts: [] });
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [articles, setArticles] = useState<ContentArticle[]>([]);
 
   const loadData = () => {
     setConfig(storageService.getHomeContent());
     setProducts(storageService.getProducts());
+    setArticles(storageService.getArticles());
   };
 
   useEffect(() => {
@@ -35,6 +37,13 @@ export default function Home() {
 
   const handleHighlightClick = (h: WeeklyHighlight) => {
     if (h.linkType === 'internal') {
+      if (h.contentId) {
+        const article = articles.find(a => a.id === h.contentId);
+        if (article) {
+          navigate(`/conteudo/${article.slug}`);
+          return;
+        }
+      }
       navigate(h.linkUrl);
     } else {
       window.open(h.linkUrl, '_blank');

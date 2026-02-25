@@ -1,5 +1,5 @@
 import { AdminProduct, AdminPartner, AdminUser, AdminSettings, PublicationRequest } from '../types/admin';
-import { HomeContentConfig } from '../types/content';
+import { HomeContentConfig, ContentArticle } from '../types/content';
 
 const KEYS = {
   PRODUCTS: 'ENT_ADMIN_PRODUCTS',
@@ -8,39 +8,42 @@ const KEYS = {
   SETTINGS: 'ENT_ADMIN_SETTINGS',
   PUBLICATION_REQUESTS: 'ENT_ADMIN_PUBLICATION_REQUESTS',
   HOME_CONTENT: 'ENT_HOME_CONTENT',
+  ARTICLES: 'ENT_CONTENT_ARTICLES',
 };
 
 export const storageService = {
+  // Articles
+  getArticles(): ContentArticle[] {
+    try {
+      const data = localStorage.getItem(KEYS.ARTICLES);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Error reading articles', e);
+      return [];
+    }
+  },
+  saveArticles(articles: ContentArticle[]) {
+    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
+    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+  },
+
   // Products
   getProducts(): AdminProduct[] {
     try {
       const data = localStorage.getItem(KEYS.PRODUCTS);
       if (!data) return [];
       const products: AdminProduct[] = JSON.parse(data);
-      
-      // Migration / Compat
       return products.map(p => ({
         ...p,
         shortDescription: p.shortDescription || 'Solução estratégica para otimização de processos no varejo.',
-        benefits: p.benefits || [
-          { id: '1', text: 'Implementação ágil e suporte dedicado' },
-          { id: '2', text: 'Integração nativa com sistemas ERP' },
-          { id: '3', text: 'Dashboard de indicadores em tempo real' },
-          { id: '4', text: 'Redução de custos operacionais comprovada' }
-        ],
-        testimonial: p.testimonial || {
-          enabled: false,
-          stars: 5,
-          quote: '',
-        },
+        benefits: p.benefits || [],
+        testimonial: p.testimonial || { enabled: false, stars: 5, quote: '' },
         billingPeriod: p.billingPeriod || 'monthly',
         priceLabel: p.priceLabel || 'INVESTIMENTO MENSAL',
         ctaPrimaryLabel: p.ctaPrimaryLabel || 'Contratar agora',
         ctaSecondaryLabel: p.ctaSecondaryLabel || 'Agendar conversa',
-        heroImageUrl: p.heroImageUrl || p.imageUrl,
       }));
     } catch (e) {
-      console.error('Error reading products', e);
       return [];
     }
   },
@@ -55,7 +58,6 @@ export const storageService = {
       const data = localStorage.getItem(KEYS.PARTNERS);
       return data ? JSON.parse(data) : [];
     } catch (e) {
-      console.error('Error reading partners', e);
       return [];
     }
   },
@@ -70,7 +72,6 @@ export const storageService = {
       const data = localStorage.getItem(KEYS.USERS);
       return data ? JSON.parse(data) : [];
     } catch (e) {
-      console.error('Error reading users', e);
       return [];
     }
   },
@@ -91,10 +92,7 @@ export const storageService = {
       };
     } catch (e) {
       return {
-        platformName: 'ENT One Stop Shop',
-        theme: 'Executivo Light',
-        allowPublicPrices: false,
-        requirePartnerApproval: true,
+        platformName: 'ENT One Stop Shop', theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true
       };
     }
   },
@@ -103,32 +101,12 @@ export const storageService = {
     window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
   },
 
-  // Publication Requests
-  getPublicationRequests(): PublicationRequest[] {
-    try {
-      const data = localStorage.getItem(KEYS.PUBLICATION_REQUESTS);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      console.error('Error reading publication requests', e);
-      return [];
-    }
-  },
-  savePublicationRequests(requests: PublicationRequest[]) {
-    localStorage.setItem(KEYS.PUBLICATION_REQUESTS, JSON.stringify(requests));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
-  },
-
   // Home Content (CMS)
   getHomeContent(): HomeContentConfig {
     try {
       const data = localStorage.getItem(KEYS.HOME_CONTENT);
       if (!data) return { highlights: [], suggested: [], videocasts: [] };
-      const config: HomeContentConfig = JSON.parse(data);
-      return {
-        highlights: config.highlights || [],
-        suggested: config.suggested || [],
-        videocasts: config.videocasts || [],
-      };
+      return JSON.parse(data);
     } catch (e) {
       return { highlights: [], suggested: [], videocasts: [] };
     }
@@ -140,194 +118,83 @@ export const storageService = {
 
   // Seed
   seedInitialData() {
-    const products = this.getProducts();
-    const partners = this.getPartners();
-    const users = this.getUsers();
+    const articles = this.getArticles();
+    if (articles.length === 0) {
+      this.saveArticles([
+        {
+          id: 'art-1',
+          title: 'Como escalar sua operação de varejo com IA',
+          slug: 'escalar-operacao-varejo-ia',
+          excerpt: 'Descubra como a inteligência artificial está transformando a eficiência operacional e a experiência do cliente no varejo moderno.',
+          coverImageUrl: 'https://picsum.photos/seed/ai-retail/1200/600',
+          tags: ['IA', 'OPERAÇÃO', 'ESTRATÉGIA'],
+          readingTime: '5 min leitura',
+          authorName: 'Ricardo Mendes',
+          publishedAt: new Date().toISOString(),
+          status: 'published',
+          body: [
+            { id: 'b1', type: 'heading', text: 'A Revolução Silenciosa da IA no Chão de Loja' },
+            { id: 'b2', type: 'paragraph', text: 'Muitos varejistas ainda veem a inteligência artificial como algo futurista, mas a realidade é que ela já está otimizando estoques e prevendo demandas em tempo real.' },
+            { id: 'b3', type: 'quote', text: 'A tecnologia não substitui o talento humano, ela o escala.' },
+            { id: 'b4', type: 'heading', text: 'Principais Benefícios Observados' },
+            { id: 'b5', type: 'bullet', text: 'Redução de 30% em perdas de estoque por vencimento.' },
+            { id: 'b6', type: 'bullet', text: 'Personalização de ofertas que aumenta o ticket médio em até 15%.' },
+            { id: 'b7', type: 'bullet', text: 'Otimização de escalas de funcionários baseada no fluxo histórico.' },
+            { id: 'b8', type: 'paragraph', text: 'Implementar essas soluções requer uma mentalidade orientada a dados, mas os resultados justificam o investimento em poucos meses.' }
+          ],
+          createdAt: new Date().toISOString()
+        }
+      ]);
+    }
 
+    const products = this.getProducts();
     if (products.length === 0) {
       this.saveProducts([
         {
           id: '1',
           name: 'Checkii+',
-          slug: 'checkii-plus',
           category: 'SaaS',
           priceCents: 29900,
           status: 'active',
           shortDescription: 'O checklist inteligente que garante a execução perfeita da sua loja.',
-          longDescription: 'O Checkii+ é a solução definitiva para gestão de rotinas operacionais. Com ele, você digitaliza processos, monitora conformidade em tempo real e identifica gargalos antes que eles virem prejuízo.',
           heroImageUrl: 'https://picsum.photos/seed/checkii/1200/800',
-          logoImageUrl: 'https://picsum.photos/seed/checkii-logo/200/200',
-          billingPeriod: 'monthly',
-          priceLabel: 'INVESTIMENTO MENSAL',
-          benefits: [
-            { id: 'b1', text: 'Digitalização completa de processos' },
-            { id: 'b2', text: 'Relatórios automáticos por loja' },
-            { id: 'b3', text: 'Alertas de não conformidade' },
-            { id: 'b4', text: 'Suporte 24/7 especializado' }
-          ],
-          testimonial: {
-            enabled: true,
-            stars: 5,
-            quote: 'O Checkii+ mudou nossa rotina. Hoje temos 100% de visibilidade sobre o que acontece no chão de loja.',
-            authorName: 'Marcos Oliveira',
-            authorRole: 'Gerente de Operações',
-            company: 'Rede Varejo Top'
-          },
+          benefits: [{ id: 'b1', text: 'Digitalização de processos' }],
           createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'DataStream Pro 360',
-          category: 'SaaS',
-          priceCents: 49990,
-          status: 'active',
-          shortDescription: 'Visibilidade total dos seus dados de vendas e estoque em um só lugar.',
-          heroImageUrl: 'https://picsum.photos/seed/data/800/600',
-          createdAt: new Date().toISOString(),
-          benefits: [
-            { id: '1', text: 'Implementação ágil e suporte dedicado' },
-            { id: '2', text: 'Integração nativa com sistemas ERP' },
-            { id: '3', text: 'Dashboard de indicadores em tempo real' },
-            { id: '4', text: 'Redução de custos operacionais comprovada' }
-          ],
-        },
-        {
-          id: '3',
-          name: 'OmniChannel Enterprise',
-          category: 'IA',
-          priceCents: 89900,
-          status: 'active',
-          shortDescription: 'Inteligência Artificial para unificar seus canais de venda e atendimento.',
-          heroImageUrl: 'https://picsum.photos/seed/crm/800/600',
-          createdAt: new Date().toISOString(),
-          benefits: [
-            { id: '1', text: 'Implementação ágil e suporte dedicado' },
-            { id: '2', text: 'Integração nativa com sistemas ERP' },
-            { id: '3', text: 'Dashboard de indicadores em tempo real' },
-            { id: '4', text: 'Redução de custos operacionais comprovada' }
-          ],
         }
       ]);
     }
 
-    if (partners.length === 0) {
-      this.savePartners([
-        {
-          id: 'p1',
-          name: 'Global Logistics S.A.',
-          type: 'Tecnologia',
-          contactName: 'Ricardo Alencar',
-          email: 'ricardo@globallogistics.com',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'p2',
-          name: 'Tech Solutions Ltd',
-          type: 'Consultoria',
-          contactName: 'Mariana Costa',
-          email: 'mariana@techsolutions.com',
-          status: 'pending',
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    }
-
+    const users = this.getUsers();
     if (users.length === 0) {
-      this.saveUsers([
-        {
-          id: 'u1',
-          name: 'Suporte ENT',
-          email: 'suporte@ent.app.br',
-          role: 'admin',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'u2',
-          name: 'Ana Silva',
-          email: 'ana@ent.com',
-          role: 'editor',
-          status: 'active',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'u3',
-          name: 'Carlos Oliveira',
-          email: 'carlos@ent.com',
-          role: 'viewer',
-          status: 'inactive',
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      this.saveUsers([{ id: 'u1', name: 'Admin', email: 'admin@ent.com', role: 'admin', status: 'active', createdAt: new Date().toISOString() }]);
     }
 
-    // Seed Home Content
     const homeContent = this.getHomeContent();
-    if (homeContent.highlights.length === 0 && homeContent.suggested.length === 0 && homeContent.videocasts.length === 0) {
+    if (homeContent.highlights.length === 0) {
+      const art = this.getArticles()[0];
       this.saveHomeContent({
         highlights: [
           {
             id: 'h1',
             title: 'Como escalar sua operação de varejo com IA',
-            tag: 'OPERAÇÃO',
-            imageUrl: 'https://picsum.photos/seed/highlight1/800/400',
+            tag: 'ESTRATÉGIA',
+            imageUrl: 'https://picsum.photos/seed/ai-retail/800/400',
             readTimeLabel: '5 min leitura',
-            linkType: 'external',
-            linkUrl: 'https://google.com',
+            linkType: 'internal',
+            linkUrl: '/conteudo/escalar-operacao-varejo-ia',
+            contentId: art?.id,
             status: 'active',
             order: 1
-          },
-          {
-            id: 'h2',
-            title: 'Novas tendências de conversão para 2024',
-            tag: 'CONVERSÃO',
-            imageUrl: 'https://picsum.photos/seed/highlight2/800/400',
-            readTimeLabel: '8 min leitura',
-            linkType: 'external',
-            linkUrl: 'https://google.com',
-            status: 'active',
-            order: 2
           }
         ],
-        suggested: [
-          {
-            id: 's1',
-            productId: '1',
-            customCta: 'Saber mais',
-            status: 'active',
-            order: 1
-          },
-          {
-            id: 's2',
-            productId: '2',
-            customCta: 'Saber mais',
-            status: 'active',
-            order: 2
-          }
-        ],
-        videocasts: [
-          {
-            id: 'v1',
-            title: 'Cultura de Dados no Varejo',
-            categoryLabel: 'GESTÃO • SESSÃO #42',
-            description: 'Nesta sessão, discutimos como implementar uma cultura orientada a dados.',
-            thumbnailUrl: 'https://picsum.photos/seed/video1/800/450',
-            videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            speakerLabel: 'Com Marcos Paulo e Julia Reis',
-            status: 'active',
-            order: 1
-          }
-        ]
+        suggested: [],
+        videocasts: []
       });
     }
   },
 
   resetAll() {
-    localStorage.removeItem(KEYS.PRODUCTS);
-    localStorage.removeItem(KEYS.PARTNERS);
-    localStorage.removeItem(KEYS.USERS);
-    localStorage.removeItem(KEYS.SETTINGS);
+    localStorage.clear();
     this.seedInitialData();
   }
 };
