@@ -4,6 +4,7 @@ import { storageService } from '../lib/storageService';
 import { WeeklyHighlight } from '../types/content';
 import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from '../components/Icons';
+import { formatDateBR } from '../lib/format';
 
 export default function ContentDetail() {
   const { slug } = useParams();

@@ -12,21 +12,6 @@ const KEYS = {
 };
 
 export const storageService = {
-  // Articles
-  getArticles(): ContentArticle[] {
-    try {
-      const data = localStorage.getItem(KEYS.ARTICLES);
-      return data ? JSON.parse(data) : [];
-    } catch (e) {
-      console.error('Error reading articles', e);
-      return [];
-    }
-  },
-  saveArticles(articles: ContentArticle[]) {
-    localStorage.setItem(KEYS.ARTICLES, JSON.stringify(articles));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
-  },
-
   // Products
   getProducts(): AdminProduct[] {
     try {
@@ -80,6 +65,20 @@ export const storageService = {
     window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
   },
 
+  // Publication Requests
+  getPublicationRequests(): PublicationRequest[] {
+    try {
+      const data = localStorage.getItem(KEYS.PUBLICATION_REQUESTS);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+  savePublicationRequests(requests: PublicationRequest[]) {
+    localStorage.setItem(KEYS.PUBLICATION_REQUESTS, JSON.stringify(requests));
+    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+  },
+
   // Settings
   getSettings(): AdminSettings {
     try {
@@ -118,35 +117,6 @@ export const storageService = {
 
   // Seed
   seedInitialData() {
-    const articles = this.getArticles();
-    if (articles.length === 0) {
-      this.saveArticles([
-        {
-          id: 'art-1',
-          title: 'Como escalar sua operação de varejo com IA',
-          slug: 'escalar-operacao-varejo-ia',
-          excerpt: 'Descubra como a inteligência artificial está transformando a eficiência operacional e a experiência do cliente no varejo moderno.',
-          coverImageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=1200',
-          tags: ['IA', 'OPERAÇÃO', 'ESTRATÉGIA'],
-          readingTime: '5 min leitura',
-          authorName: 'Ricardo Mendes',
-          publishedAt: new Date().toISOString(),
-          status: 'published',
-          body: [
-            { id: 'b1', type: 'heading', text: 'A Revolução Silenciosa da IA no Chão de Loja' },
-            { id: 'b2', type: 'paragraph', text: 'Muitos varejistas ainda veem a inteligência artificial como algo futurista, mas a realidade é que ela já está otimizando estoques e prevendo demandas em tempo real.' },
-            { id: 'b3', type: 'quote', text: 'A tecnologia não substitui o talento humano, ela o escala.' },
-            { id: 'b4', type: 'heading', text: 'Principais Benefícios Observados' },
-            { id: 'b5', type: 'bullet', text: 'Redução de 30% em perdas de estoque por vencimento.' },
-            { id: 'b6', type: 'bullet', text: 'Personalização de ofertas que aumenta o ticket médio em até 15%.' },
-            { id: 'b7', type: 'bullet', text: 'Otimização de escalas de funcionários baseada no fluxo histórico.' },
-            { id: 'b8', type: 'paragraph', text: 'Implementar essas soluções requer uma mentalidade orientada a dados, mas os resultados justificam o investimento em poucos meses.' }
-          ],
-          createdAt: new Date().toISOString()
-        }
-      ]);
-    }
-
     const products = this.getProducts();
     if (products.length === 0) {
       this.saveProducts([
@@ -171,20 +141,28 @@ export const storageService = {
 
     const homeContent = this.getHomeContent();
     if (homeContent.highlights.length === 0) {
-      const art = this.getArticles()[0];
       this.saveHomeContent({
         highlights: [
           {
             id: 'h1',
             title: 'Como escalar sua operação de varejo com IA',
+            subtitle: 'Descubra como a inteligência artificial está transformando a eficiência operacional e a experiência do cliente no varejo moderno.',
+            slug: 'escalar-operacao-varejo-ia',
             tag: 'ESTRATÉGIA',
             imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800',
+            contentCoverUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=1200',
             readTimeLabel: '5 min leitura',
             linkType: 'internal',
-            linkUrl: '/conteudo/escalar-operacao-varejo-ia',
-            contentId: art?.id,
+            linkUrl: '',
             status: 'active',
-            order: 1
+            order: 1,
+            authorName: 'Ricardo Mendes',
+            body: [
+              { id: 'b1', type: 'heading', text: 'A Revolução Silenciosa da IA no Chão de Loja' },
+              { id: 'b2', type: 'paragraph', text: 'Muitos varejistas ainda veem a inteligência artificial como algo futurista, mas a realidade é que ela já está otimizando estoques e prevendo demandas em tempo real.' },
+              { id: 'b3', type: 'quote', text: 'A tecnologia não substitui o talento humano, ela o escala.' },
+              { id: 'b4', type: 'paragraph', text: 'Implementar essas soluções requer uma mentalidade orientada a dados, mas os resultados justificam o investimento em poucos meses.' }
+            ]
           }
         ],
         suggested: [],
