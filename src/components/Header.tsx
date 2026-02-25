@@ -11,17 +11,16 @@ export default function Header() {
   const navLinks = [
     { path: '/', label: 'Novidades' },
     { path: '/marketplace', label: 'Marketplace' },
-    { path: '/request-publication', label: 'Solicitar Publicação' },
-    { path: '/admin', label: 'Admin' },
+    { path: '/request-publication', label: 'Publicar' },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <HubIcon className="text-[#0052cc] w-8 h-8" />
-          <h1 className="text-xl font-black tracking-tighter text-slate-900">
-            ENT<span className="text-[#0052cc]">.</span>
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 shrink-0 group">
+          <HubIcon className="text-[#1D4ED8] w-7 h-7" />
+          <h1 className="text-xl font-black tracking-tighter text-[#0B1220]">
+            ENT<span className="text-[#1D4ED8]">.</span>
           </h1>
         </Link>
 
@@ -31,11 +30,19 @@ export default function Header() {
             <Link 
               key={link.path} 
               to={link.path} 
-              className="text-sm font-bold uppercase tracking-wider text-slate-600 hover:text-[#0052cc] transition-colors"
+              className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-[#1D4ED8] transition-colors"
             >
               {link.label}
             </Link>
           ))}
+          {isAuthenticated && (
+            <Link 
+              to="/admin" 
+              className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-[#1D4ED8] transition-colors"
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -43,14 +50,14 @@ export default function Header() {
             {isAuthenticated ? (
               <button 
                 onClick={logout}
-                className="text-sm font-bold text-slate-600 hover:text-red-500 transition-colors"
+                className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors"
               >
                 Sair
               </button>
             ) : (
               <Link 
                 to="/login"
-                className="bg-[#0052cc] text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#0052cc]/90 transition-colors"
+                className="bg-[#1D4ED8] text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-[#1D4ED8]/90 transition-colors"
               >
                 Entrar
               </Link>
@@ -60,7 +67,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button 
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-slate-600 hover:text-[#0052cc] transition-colors"
+            className="md:hidden p-2 text-slate-600 hover:text-[#1D4ED8] transition-colors"
           >
             {isMenuOpen ? (
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,24 +97,33 @@ export default function Header() {
                   key={link.path} 
                   to={link.path} 
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-base font-bold uppercase tracking-wider text-slate-600 hover:text-[#0052cc]"
+                  className="block text-sm font-bold uppercase tracking-wider text-[#0B1220]"
                 >
                   {link.label}
                 </Link>
               ))}
+              {isAuthenticated && (
+                <Link 
+                  to="/admin" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block text-sm font-bold uppercase tracking-wider text-[#0B1220]"
+                >
+                  Admin
+                </Link>
+              )}
               <div className="pt-4 border-t border-slate-100">
                 {isAuthenticated ? (
                   <button 
                     onClick={() => { logout(); setIsMenuOpen(false); }}
-                    className="w-full text-left text-base font-bold text-red-500"
+                    className="w-full text-left text-sm font-bold text-red-500 uppercase tracking-widest"
                   >
-                    Sair
+                    Sair da conta
                   </button>
                 ) : (
                   <Link 
                     to="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="block w-full text-center bg-[#0052cc] text-white py-3 rounded-xl font-bold"
+                    className="block w-full text-center bg-[#1D4ED8] text-white py-3 rounded-xl font-bold"
                   >
                     Entrar
                   </Link>
