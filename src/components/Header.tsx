@@ -35,12 +35,20 @@ export default function Header() {
             </Link>
           ))}
           {isAuthenticated && (
-            <Link 
-              to="/painel" 
-              className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#1D4ED8] transition-colors"
-            >
-              Meu Painel
-            </Link>
+            <>
+              <Link 
+                to="/painel" 
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#1D4ED8] transition-colors"
+              >
+                Meu Painel
+              </Link>
+              <Link 
+                to="/request-publication" 
+                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#1D4ED8] transition-colors"
+              >
+                Solicitar Publicação
+              </Link>
+            </>
           )}
           {isAdmin && (
             <Link 
@@ -115,13 +123,22 @@ export default function Header() {
                 </Link>
               ))}
               {isAuthenticated && (
-                <Link 
-                  to="/painel" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block text-sm font-black uppercase tracking-wider text-[#0B1220]"
-                >
-                  Meu Painel
-                </Link>
+                <>
+                  <Link 
+                    to="/painel" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block text-sm font-black uppercase tracking-wider text-[#0B1220]"
+                  >
+                    Meu Painel
+                  </Link>
+                  <Link 
+                    to="/request-publication" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block text-sm font-black uppercase tracking-wider text-[#0B1220]"
+                  >
+                    Solicitar Publicação
+                  </Link>
+                </>
               )}
               {isAdmin && (
                 <Link 
