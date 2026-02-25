@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { HubIcon } from '../components/Icons';
 
 export default function Login() {
   const { login } = useAuth();
@@ -19,19 +18,20 @@ export default function Login() {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-[480px] bg-white p-10 rounded-2xl shadow-xl border border-slate-100"
       >
-        <div className="flex flex-col items-center gap-4 mb-12">
-          <div className="w-14 h-14 bg-[#0052cc] flex items-center justify-center rounded-xl shadow-lg shadow-[#0052cc]/20">
-            <HubIcon className="text-white w-8 h-8" />
+        <div className="flex flex-col items-center gap-6 mb-12">
+          <div className="h-12 flex items-center justify-center">
+            <img 
+              src="/logo.png" 
+              alt="ENT Logo" 
+              className="h-full w-auto object-contain"
+            />
           </div>
           <div className="text-center">
-            <h2 className="text-slate-900 text-lg font-bold tracking-tight uppercase mb-1">
-              One Stop Shop ENT.
-            </h2>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
               Acesse condições exclusivas
             </h1>
-            <p className="text-slate-500 mt-3 max-w-[320px] mx-auto">
-              Você só precisa criar conta para visualizar preços personalizados e contratar soluções.
+            <p className="text-slate-500 mt-3 max-w-[320px] mx-auto text-sm">
+              Você só precisa criar conta para visualizar preços personalizados e contratar soluções estratégicas.
             </p>
           </div>
         </div>
@@ -74,12 +74,12 @@ export default function Login() {
 
         <button 
           onClick={handleLogin}
-          className="w-full text-[#0052cc] font-bold text-sm hover:underline"
+          className="w-full text-[#1D4ED8] font-bold text-sm hover:underline"
         >
           Entrar com e-mail corporativo
         </button>
 
-        <p className="mt-12 text-center text-slate-400 text-xs leading-relaxed">
+        <p className="mt-12 text-center text-slate-400 text-[10px] leading-relaxed uppercase font-bold tracking-wider">
           Ao continuar, você concorda com nossos <br />
           <a href="#" className="underline">Termos de Uso</a> e <a href="#" className="underline">Política de Privacidade</a>.
         </p>

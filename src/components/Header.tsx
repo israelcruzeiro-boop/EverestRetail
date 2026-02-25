@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { HubIcon } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header() {
@@ -17,11 +16,12 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <HubIcon className="text-[#1D4ED8] w-7 h-7" />
-          <h1 className="text-xl font-black tracking-tighter text-[#0B1220]">
-            ENT<span className="text-[#1D4ED8]">.</span>
-          </h1>
+        <Link to="/" className="flex items-center h-8 shrink-0 group">
+          <img 
+            src="/logo.png" 
+            alt="ENT Logo" 
+            className="h-full w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Nav */}
