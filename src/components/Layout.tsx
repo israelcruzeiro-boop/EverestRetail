@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
+import { APP_CONFIG } from '../config/appConfig';
 
 export default function Layout() {
   return (
@@ -10,8 +11,8 @@ export default function Layout() {
       </main>
       <footer className="bg-white border-t border-slate-200 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-slate-400 text-sm">
-            © 2024 ENT One Stop Shop. Todos os direitos reservados.
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
+            © 2024 {APP_CONFIG.name}. Todos os direitos reservados.
           </p>
         </div>
       </footer>

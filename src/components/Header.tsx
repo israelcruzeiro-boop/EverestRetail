@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { APP_CONFIG } from '../config/appConfig';
 
 export default function Header() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -17,8 +18,8 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center h-8 shrink-0 group">
           <img 
-            src="/logo.png" 
-            alt="ENT Logo" 
+            src={APP_CONFIG.logoPath} 
+            alt={APP_CONFIG.name} 
             className="h-full w-auto object-contain"
           />
         </Link>

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { analytics } from '../lib/analytics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { APP_CONFIG } from '../config/appConfig';
 
 export default function Login() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
@@ -56,7 +57,7 @@ export default function Login() {
       >
         <div className="p-8 md:p-10">
           <div className="flex flex-col items-center gap-4 mb-10 text-center">
-            <img src="/logo.png" alt="ENT Logo" className="h-10 w-auto object-contain" />
+            <img src={APP_CONFIG.logoPath} alt={APP_CONFIG.name} className="h-10 w-auto object-contain" />
             <div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
                 {mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta'}

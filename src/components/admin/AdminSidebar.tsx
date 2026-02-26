@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { APP_CONFIG } from '../../config/appConfig';
 
 const menuItems = [
   { path: '/admin', label: 'Dashboard', icon: '📊' },
@@ -19,8 +20,8 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
       <div className="p-6 flex items-center justify-between">
         <NavLink to="/" className="flex items-center h-7 shrink-0">
           <img 
-            src="/logo.png" 
-            alt="ENT Logo" 
+            src={APP_CONFIG.logoPath} 
+            alt={APP_CONFIG.name} 
             className="h-full w-auto object-contain"
           />
         </NavLink>

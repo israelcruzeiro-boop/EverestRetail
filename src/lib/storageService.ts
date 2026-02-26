@@ -1,6 +1,7 @@
 import { AdminProduct, AdminPartner, AdminUser, AdminSettings, PublicationRequest } from '../types/admin';
 import { HomeContentConfig } from '../types/content';
 import { AnalyticsEvent } from '../types/analytics';
+import { APP_CONFIG } from '../config/appConfig';
 
 const KEYS = {
   PRODUCTS: 'ENT_ADMIN_PRODUCTS',
@@ -56,8 +57,8 @@ export const storageService = {
   getSettings(): AdminSettings {
     try {
       const data = localStorage.getItem(KEYS.SETTINGS);
-      return data ? JSON.parse(data) : { platformName: 'ENT One Stop Shop', theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true };
-    } catch (e) { return { platformName: 'ENT One Stop Shop', theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true }; }
+      return data ? JSON.parse(data) : { platformName: APP_CONFIG.name, theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true };
+    } catch (e) { return { platformName: APP_CONFIG.name, theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true }; }
   },
   saveSettings(settings: AdminSettings) {
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
