@@ -7,8 +7,9 @@ export interface AdminProduct {
   slug?: string;
   category: ProductCategory;
   status: ProductStatus;
-  
+
   priceCents: number;
+  originalPriceCents?: number;
   billingPeriod?: 'monthly' | 'yearly';
   priceLabel?: string;
 
@@ -17,6 +18,7 @@ export interface AdminProduct {
 
   heroImageUrl?: string;
   logoImageUrl?: string;
+  videoUrl?: string;
   gallery?: string[];
 
   benefits: Array<{ id: string; text: string }>;
@@ -35,10 +37,12 @@ export interface AdminProduct {
   ctaSecondaryLabel?: string;
 
   partnerId?: string;
-  imageUrl?: string; 
+  imageUrl?: string;
   imageAlt?: string;
   createdAt: string;
   updatedAt?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export type PartnerType = 'Fornecedor' | 'Consultoria' | 'Tecnologia';
@@ -48,7 +52,7 @@ export interface AdminPartner {
   id: string;
   name: string;
   type: PartnerType;
-  logoUrl?: string; 
+  logoUrl?: string;
   contactName: string;
   email: string;
   phone?: string;
@@ -63,24 +67,31 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  password?: string; // Campo adicionado
+  avatarUrl: string | null;
+  password?: string;
   role: UserRole;
-  status: UserStatus;
+  userType: 'admin' | 'user';
+  status: 'active' | 'inactive';
   createdAt: string;
+  coinsBalance?: number;
+  coinsEarnedTotal?: number;
+  currentLevel?: number;
+  xpTotal?: number;
   updatedAt?: string;
 }
 
 export interface PublicationRequest {
   id: string;
-  requesterUserId: string;
-  requesterName: string;
-  requesterEmail: string;
-  partnerName: string;
-  partnerType: PartnerType;
-  productName: string;
+  requesterProfileId: string;
+  partnerId?: string;
+  name: string;
+  type: 'product' | 'service';
   category: ProductCategory;
+  shortDescription?: string;
   description: string;
-  status: 'pending' | 'approved' | 'rejected';
+  priceCents: number;
+  billingPeriod: 'monthly' | 'yearly';
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt?: string;
 }
@@ -90,4 +101,25 @@ export interface AdminSettings {
   theme: string;
   allowPublicPrices: boolean;
   requirePartnerApproval: boolean;
+}
+
+export interface ProductReview {
+  id: string;
+  profileId: string;
+  productId: string;
+  rating: number; // 0-10
+  comment?: string;
+  createdAt: string;
+  updatedAt: string;
+  profile?: {
+    name: string;
+    avatar_url: string | null;
+  };
+}
+
+export interface ProductHire {
+  id: string;
+  profileId: string;
+  productId: string;
+  hiredAt: string;
 }

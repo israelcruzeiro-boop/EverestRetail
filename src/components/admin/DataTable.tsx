@@ -23,31 +23,31 @@ export default function DataTable<T>({ data, columns, emptyMessage = 'Nenhum dad
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-white border-2 border-[#0B1220] overflow-hidden">
       <div className="overflow-x-auto no-scrollbar">
-        <table className="w-full text-left min-w-[600px] md:min-w-full">
-          <thead className="bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">
+        <table className="w-full text-left min-w-[600px] md:min-w-full border-collapse">
+          <thead className="bg-[#0B1220] text-[10px] font-black text-white uppercase tracking-[0.3em]">
             <tr>
               {columns.map((col, idx) => (
-                <th 
-                  key={idx} 
-                  className={`px-4 md:px-6 py-4 ${col.className} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
+                <th
+                  key={idx}
+                  className={`px-6 py-5 border-r-2 border-[#FFFFFF]/10 last:border-r-0 ${col.className} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
                 >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y-2 divide-[#0B1220]/10">
             {data.map((item, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-slate-50 transition-all">
+              <tr key={rowIdx} className="hover:bg-[#1D4ED8]/5 transition-all group">
                 {columns.map((col, colIdx) => (
-                  <td 
-                    key={colIdx} 
-                    className={`px-4 md:px-6 py-4 text-sm ${col.className} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
+                  <td
+                    key={colIdx}
+                    className={`px-6 py-5 text-[11px] font-black uppercase tracking-tight text-[#0B1220] ${col.className} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}
                   >
-                    {typeof col.accessor === 'function' 
-                      ? col.accessor(item) 
+                    {typeof col.accessor === 'function'
+                      ? col.accessor(item)
                       : (item[col.accessor] as ReactNode)}
                   </td>
                 ))}

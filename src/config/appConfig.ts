@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
-  name: "Marketplace ENT",
-  shortName: "ENT",
+  name: "Everest Retail",
+  shortName: "Everest",
   logoPath: "/logo.png",
-  description: "Marketplace Executivo para Varejo - Soluções corporativas e estratégicas.",
+  description: "Everest Retail - Marketplace Executivo para Varejo - Soluções corporativas e estratégicas.",
 };

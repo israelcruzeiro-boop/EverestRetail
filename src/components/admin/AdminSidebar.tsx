@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { APP_CONFIG } from '../../config/appConfig';
 
 const menuItems = [
@@ -6,6 +7,8 @@ const menuItems = [
   { path: '/admin/products', label: 'Produtos', icon: '📦' },
   { path: '/admin/content', label: 'Conteúdo', icon: '✨' },
   { path: '/admin/partners', label: 'Parceiros', icon: '🤝' },
+  { path: '/admin/blog', label: 'Blog', icon: '📝' },
+  { path: '/admin/sponsored-videos', label: 'Vídeos', icon: '🎞️' },
   { path: '/admin/users', label: 'Usuários', icon: '👥' },
   { path: '/admin/settings', label: 'Ajustes', icon: '⚙️' },
 ];
@@ -15,24 +18,32 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ onClose }: AdminSidebarProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    if (onClose) onClose();
+  };
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full">
-      <div className="p-6 flex items-center justify-between">
-        <NavLink to="/" className="flex items-center h-7 shrink-0">
-          <img 
-            src={APP_CONFIG.logoPath} 
-            alt={APP_CONFIG.name} 
-            className="h-full w-auto object-contain"
+    <aside className="w-72 bg-white border-r-2 border-[#0B1220] flex flex-col h-full">
+      <div className="p-8 flex items-center justify-between border-b-2 border-[#0B1220]">
+        <NavLink to="/" className="flex items-center h-8 shrink-0 group">
+          <img
+            src={APP_CONFIG.logoPath}
+            alt={APP_CONFIG.name}
+            className="h-full w-auto object-contain grayscale group-hover:grayscale-0 transition-all"
           />
         </NavLink>
-        <button onClick={onClose} className="md:hidden p-2 text-slate-400 hover:text-slate-600">
+        <button onClick={onClose} className="md:hidden p-2 text-[#0B1220] hover:bg-[#0B1220] hover:text-white transition-colors border-2 border-[#0B1220]">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1 mt-4">
+      <nav className="flex-1 flex flex-col py-4">
         {menuItems.map((item) => (
           <NavLink
             key={item.path}
@@ -40,27 +51,38 @@ export default function AdminSidebar({ onClose }: AdminSidebarProps) {
             end={item.path === '/admin'}
             onClick={onClose}
             className={({ isActive }) => `
-              flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all
-              ${isActive 
-                ? 'bg-[#1D4ED8]/10 text-[#1D4ED8]' 
-                : 'text-slate-600 hover:bg-slate-50'}
+              flex items-center gap-4 px-8 py-5 font-black text-[10px] uppercase tracking-[0.2em] transition-all border-b-2 border-[#0B1220]/5 last:border-b-0
+              ${isActive
+                ? 'bg-[#1D4ED8] text-white'
+                : 'text-[#0B1220] hover:bg-[#1D4ED8]/10'}
             `}
           >
-            <span className="text-lg">{item.icon}</span>
+            <span className="text-xl grayscale">{item.icon}</span>
             {item.label}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 bg-slate-50 border-t border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center text-slate-400 font-bold">
-            RM
+      <div className="p-6 bg-[#0B1220] text-white">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="w-12 h-12 bg-[#1D4ED8] flex items-center justify-center text-white font-black text-lg border-2 border-white shrink-0">
+              {user?.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-[10px] font-black uppercase tracking-tighter truncate">{user?.name}</p>
+              <p className="text-[9px] text-[#1D4ED8] uppercase tracking-widest font-black">{user?.role}</p>
+            </div>
           </div>
-          <div className="overflow-hidden">
-            <p className="text-xs font-bold text-slate-900 truncate">Ricardo Mendes</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-tight font-bold">Managing Director</p>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="p-3 bg-[#FF4D00] text-white hover:bg-white hover:text-[#FF4D00] transition-all border-2 border-[#FF4D00] shrink-0"
+            title="Sair"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

@@ -14,3 +14,8 @@ export function formatDateBR(dateISO: string): string {
     year: 'numeric',
   });
 }
+
+export function getSaoPauloDate(): string {
+  // Retorna YYYY-MM-DD no fuso de São Paulo usando o local en-CA (que é YYYY-MM-DD)
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+}

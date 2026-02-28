@@ -1,4 +1,4 @@
-export const MAX_IMAGE_SIZE = 1.5 * 1024 * 1024; // 1.5MB
+export const MAX_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 
 export function isValidImageFile(file: File): { valid: boolean; error?: string } {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -6,7 +6,7 @@ export function isValidImageFile(file: File): { valid: boolean; error?: string }
     return { valid: false, error: 'Formato de imagem inválido. Use JPG, PNG, WEBP ou GIF.' };
   }
   if (file.size > MAX_IMAGE_SIZE) {
-    return { valid: false, error: 'A imagem deve ter no máximo 1.5MB.' };
+    return { valid: false, error: 'A imagem deve ter no máximo 3MB.' };
   }
   return { valid: true };
 }

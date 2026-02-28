@@ -4,17 +4,20 @@ interface FormFieldProps {
   label: string;
   error?: string;
   children: ReactNode;
+  className?: string;
 }
 
-export default function FormField({ label, error, children }: FormFieldProps) {
+export default function FormField({ label, error, children, className }: FormFieldProps) {
   return (
-    <div className="space-y-1.5">
-      <label className="block text-xs font-black text-slate-500 uppercase tracking-wider">
+    <div className={`space-y-2 ${className || ''}`}>
+      <label className="block text-[10px] font-black text-[#0B1220] uppercase tracking-[0.2em] ml-1">
         {label}
       </label>
-      {children}
+      <div className="relative">
+        {children}
+      </div>
       {error && (
-        <p className="text-[10px] font-bold text-red-500 uppercase tracking-tight">
+        <p className="text-[10px] font-black text-[#FF4D00] uppercase tracking-widest mt-2 ml-1">
           {error}
         </p>
       )}
@@ -26,9 +29,9 @@ export const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input
     {...props}
     className={`
-      w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-sm 
-      focus:ring-2 focus:ring-[#0052cc]/20 focus:border-[#0052cc] transition-all
-      placeholder:text-slate-400
+      w-full h-14 px-6 bg-white border-2 border-[#0B1220] rounded-none text-[10px] 
+      font-black uppercase tracking-widest focus:bg-slate-50 focus:border-[#1D4ED8] focus:ring-0 transition-all
+      placeholder:text-slate-300 placeholder:uppercase
       ${props.className || ''}
     `}
   />
@@ -38,8 +41,9 @@ export const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => 
   <select
     {...props}
     className={`
-      w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-sm 
-      focus:ring-2 focus:ring-[#0052cc]/20 focus:border-[#0052cc] transition-all
+      w-full h-14 px-6 bg-white border-2 border-[#0B1220] rounded-none text-[10px] 
+      font-black uppercase tracking-widest focus:bg-slate-50 focus:border-[#1D4ED8] focus:ring-0 transition-all
+      cursor-pointer
       ${props.className || ''}
     `}
   />
@@ -49,9 +53,9 @@ export const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement
   <textarea
     {...props}
     className={`
-      w-full p-4 bg-white border border-slate-200 rounded-xl text-sm 
-      focus:ring-2 focus:ring-[#0052cc]/20 focus:border-[#0052cc] transition-all
-      placeholder:text-slate-400
+      w-full p-6 bg-white border-2 border-[#0B1220] rounded-none text-[10px] 
+      font-black uppercase tracking-widest focus:bg-slate-50 focus:border-[#1D4ED8] focus:ring-0 transition-all
+      placeholder:text-slate-300 placeholder:uppercase
       ${props.className || ''}
     `}
   />

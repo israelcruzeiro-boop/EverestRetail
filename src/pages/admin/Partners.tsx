@@ -1,273 +1,381 @@
-import { useState, useEffect, useRef } from 'react';
-import AdminTopbar from '../../components/admin/AdminTopbar';
-import DataTable, { Column } from '../../components/admin/DataTable';
-import Modal from '../../components/admin/Modal';
-import EmptyState from '../../components/admin/EmptyState';
-import FormField, { Input, Select } from '../../components/admin/FormField';
-import { storageService } from '../../lib/storageService';
-import { AdminPartner, PublicationRequest, PartnerStatus, ProductStatus, AdminProduct, PartnerType } from '../../types/admin';
-import { formatDateBR } from '../../lib/format';
-import { isValidImageFile, readFileAsDataURL } from '../../lib/image';
+import React, { useState, useEffect } from 'react';
+import AdminTopbar from '@/components/admin/AdminTopbar';
+import DataTable, { Column } from '@/components/admin/DataTable';
+import Modal from '@/components/admin/Modal';
+import EmptyState from '@/components/admin/EmptyState';
+import { partnersRepo, PartnerRow } from '@/lib/repositories/partnersRepo';
+import { publicationRequestsRepo, PublicationRequestRow } from '@/lib/repositories/publicationRequestsRepo';
+import { formatDateBR } from '@/lib/format';
 
-type Tab = 'active' | 'requests';
+type Tab = 'partners' | 'requests';
+type RequestFilter = 'all' | 'submitted' | 'under_review' | 'approved' | 'rejected';
 
 export default function Partners() {
-  const [activeTab, setActiveTab] = useState<Tab>('active');
-  const [partners, setPartners] = useState<AdminPartner[]>([]);
-  const [requests, setRequests] = useState<PublicationRequest[]>([]);
-  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
-  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [editingPartner, setEditingPartner] = useState<AdminPartner | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<PublicationRequest | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('partners');
+  const [partners, setPartners] = useState<PartnerRow[]>([]);
+  const [requests, setRequests] = useState<PublicationRequestRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [requestFilter, setRequestFilter] = useState<RequestFilter>('all');
 
-  const logoInputRef = useRef<HTMLInputElement>(null);
+  // Modals
+  const [selectedRequest, setSelectedRequest] = useState<PublicationRequestRow | null>(null);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectNotes, setRejectNotes] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // Form State para Parceiro
-  const [partnerForm, setPartnerForm] = useState<Partial<AdminPartner>>({
-    name: '', type: 'Tecnologia', contactName: '', email: '', phone: '', status: 'active', logoUrl: ''
-  });
-
-  useEffect(() => {
-    loadData();
-    window.addEventListener('ENT_STORAGE_UPDATED', loadData);
-    return () => window.removeEventListener('ENT_STORAGE_UPDATED', loadData);
-  }, []);
-
-  const loadData = () => {
-    setPartners(storageService.getPartners());
-    setRequests(storageService.getPublicationRequests());
+  const loadData = async () => {
+    setLoading(true);
+    const [pts, reqs] = await Promise.all([
+      partnersRepo.listPartnersAdmin(),
+      publicationRequestsRepo.listRequestsAdmin()
+    ]);
+    setPartners(pts);
+    setRequests(reqs);
+    setLoading(false);
   };
 
-  const handleOpenPartnerModal = (partner?: AdminPartner) => {
-    if (partner) {
-      setEditingPartner(partner);
-      setPartnerForm({ ...partner });
-    } else {
-      setEditingPartner(null);
-      setPartnerForm({ name: '', type: 'Tecnologia', contactName: '', email: '', phone: '', status: 'active', logoUrl: '' });
-    }
-    setIsPartnerModalOpen(true);
-  };
+  useEffect(() => { loadData(); }, []);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const validation = isValidImageFile(file);
-    if (!validation.valid) { alert(validation.error); return; }
+  // ---- Partner Actions ----
+  const handlePartnerStatusChange = async (partnerId: string, status: 'pending' | 'approved' | 'blocked') => {
     try {
-      const dataUrl = await readFileAsDataURL(file);
-      setPartnerForm(prev => ({ ...prev, logoUrl: dataUrl }));
-    } catch (err) { alert('Erro ao processar imagem.'); }
-  };
-
-  const handleSavePartner = () => {
-    if (!partnerForm.name || !partnerForm.email) {
-      alert('Preencha os campos obrigatórios.');
-      return;
-    }
-
-    const all = storageService.getPartners();
-    if (editingPartner) {
-      storageService.savePartners(all.map(p => p.id === editingPartner.id ? { ...p, ...partnerForm } as AdminPartner : p));
-    } else {
-      const newPartner: AdminPartner = {
-        ...partnerForm,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString(),
-      } as AdminPartner;
-      storageService.savePartners([...all, newPartner]);
-    }
-    setIsPartnerModalOpen(false);
-  };
-
-  const handleDeletePartner = (id: string) => {
-    if (confirm('Excluir este parceiro?')) {
-      storageService.savePartners(partners.filter(p => p.id !== id));
+      await partnersRepo.updatePartnerStatus(partnerId, status);
+      await loadData();
+    } catch (err) {
+      alert('Erro ao alterar status do parceiro.');
     }
   };
 
-  const handleRequestAction = (requestId: string, action: 'approved' | 'rejected') => {
-    const allRequests = storageService.getPublicationRequests();
-    const request = allRequests.find(r => r.id === requestId);
-    if (!request) return;
-
-    const updatedRequests = allRequests.map(r => 
-      r.id === requestId ? { ...r, status: action, updatedAt: new Date().toISOString() } : r
-    );
-    storageService.savePublicationRequests(updatedRequests);
-
-    if (action === 'approved') {
-      const allPartners = storageService.getPartners();
-      let partner = allPartners.find(p => p.name === request.partnerName);
-      
-      if (!partner) {
-        partner = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: request.partnerName,
-          type: request.partnerType,
-          contactName: request.requesterName,
-          email: request.requesterEmail,
-          status: 'active',
-          createdAt: new Date().toISOString(),
-        };
-        storageService.savePartners([...allPartners, partner]);
+  // ---- Request Actions ----
+  const handleApprove = async (requestId: string) => {
+    if (!confirm('Aprovar esta solicitação? Um produto será criado automaticamente.')) return;
+    setActionLoading(true);
+    try {
+      const productId = await publicationRequestsRepo.approveRequest(requestId);
+      await loadData();
+      if (productId) {
+        alert(`Produto criado com sucesso! ID: ${productId}`);
       }
-
-      const allProducts = storageService.getProducts();
-      const newProduct: AdminProduct = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: request.productName,
-        category: request.category,
-        status: 'pending',
-        priceCents: 0,
-        shortDescription: request.description,
-        benefits: [],
-        partnerId: partner.id,
-        createdAt: new Date().toISOString(),
-      };
-      storageService.saveProducts([...allProducts, newProduct]);
+    } catch (err: any) {
+      console.error('Erro ao aprovar:', err);
+      alert(err.message || 'Erro ao aprovar solicitação.');
+    } finally {
+      setActionLoading(false);
     }
-    setIsRequestModalOpen(false);
   };
 
-  const partnerColumns: Column<AdminPartner>[] = [
+  const handleOpenReject = (req: PublicationRequestRow) => {
+    setSelectedRequest(req);
+    setRejectNotes('');
+    setIsRejectModalOpen(true);
+  };
+
+  const handleReject = async () => {
+    if (!selectedRequest) return;
+    setActionLoading(true);
+    try {
+      await publicationRequestsRepo.rejectRequest(selectedRequest.id, rejectNotes);
+      await loadData();
+      setIsRejectModalOpen(false);
+      setSelectedRequest(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao rejeitar solicitação.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ---- Filtered Requests ----
+  const filteredRequests = requestFilter === 'all'
+    ? requests
+    : requests.filter(r => r.status === requestFilter);
+
+  // ---- Status Badges ----
+  const partnerStatusBadge = (s: string) => {
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+      pending: { bg: 'bg-amber-50', text: 'text-amber-600', label: 'Pendente' },
+      approved: { bg: 'bg-green-50', text: 'text-green-600', label: 'Aprovado' },
+      blocked: { bg: 'bg-red-50', text: 'text-red-600', label: 'Bloqueado' },
+    };
+    const { bg, text, label } = map[s] || map.pending;
+    return <span className={`${bg} ${text} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider`}>{label}</span>;
+  };
+
+  const requestStatusBadge = (s: string) => {
+    const map: Record<string, { bg: string; text: string; label: string }> = {
+      submitted: { bg: 'bg-amber-50', text: 'text-amber-600', label: 'Enviada' },
+      under_review: { bg: 'bg-blue-50', text: 'text-blue-600', label: 'Em Análise' },
+      approved: { bg: 'bg-green-50', text: 'text-green-600', label: 'Aprovada' },
+      rejected: { bg: 'bg-red-50', text: 'text-red-600', label: 'Rejeitada' },
+    };
+    const { bg, text, label } = map[s] || map.submitted;
+    return <span className={`${bg} ${text} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider`}>{label}</span>;
+  };
+
+  // ---- Columns ----
+  const partnerColumns: Column<PartnerRow>[] = [
     {
       header: 'Parceiro',
       accessor: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
-            {p.logoUrl ? <img src={p.logoUrl} className="w-full h-full object-contain" /> : <span className="text-xl">🤝</span>}
+            {p.logo_url ? <img src={p.logo_url} className="w-full h-full object-contain" /> : <span className="text-xl">🤝</span>}
           </div>
           <div>
-            <p className="font-bold text-slate-900">{p.name}</p>
-            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{p.type}</p>
+            <p className="font-bold text-slate-900">{p.company_name}</p>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{p.contact_email}</p>
           </div>
         </div>
       )
     },
-    { header: 'Contato', accessor: (p) => (
-      <div>
-        <p className="text-xs font-bold">{p.contactName}</p>
-        <p className="text-[10px] text-slate-400">{p.email}</p>
-      </div>
-    )},
-    { header: 'Status', accessor: (p) => (
-      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${p.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-        {p.status === 'active' ? 'Ativo' : 'Inativo'}
-      </span>
-    )},
+    {
+      header: 'Contato',
+      accessor: (p) => (
+        <div>
+          <p className="text-xs font-bold">{p.contact_name || '—'}</p>
+          <p className="text-[10px] text-slate-400">{p.contact_phone || ''}</p>
+        </div>
+      )
+    },
+    {
+      header: 'Status',
+      accessor: (p) => partnerStatusBadge(p.status)
+    },
+    {
+      header: 'Solicitações',
+      accessor: (p) => {
+        const count = requests.filter(r => r.partner_id === p.id).length;
+        return <span className="text-xs font-bold">{count}</span>;
+      }
+    },
+    {
+      header: 'Criado em',
+      accessor: (p) => <span className="text-xs text-slate-400">{formatDateBR(p.created_at)}</span>
+    },
     {
       header: 'Ações',
-      align: 'right',
       accessor: (p) => (
-        <div className="flex justify-end gap-2">
-          <button onClick={() => handleOpenPartnerModal(p)} className="text-xs font-bold text-[#1D4ED8] hover:underline">Editar</button>
-          <button onClick={() => handleDeletePartner(p.id)} className="text-xs font-bold text-red-500 hover:underline">Excluir</button>
+        <div className="flex gap-2">
+          {p.status !== 'approved' && (
+            <button
+              onClick={() => handlePartnerStatusChange(p.id, 'approved')}
+              className="text-[10px] font-black text-green-600 uppercase tracking-wider hover:text-green-700"
+            >
+              Aprovar
+            </button>
+          )}
+          {p.status !== 'blocked' && (
+            <button
+              onClick={() => handlePartnerStatusChange(p.id, 'blocked')}
+              className="text-[10px] font-black text-red-600 uppercase tracking-wider hover:text-red-700"
+            >
+              Bloquear
+            </button>
+          )}
         </div>
       )
     }
   ];
 
-  const requestColumns: Column<PublicationRequest>[] = [
+  const requestColumns: Column<PublicationRequestRow>[] = [
     {
       header: 'Solicitação',
       accessor: (r) => (
         <div>
-          <p className="font-bold text-slate-900">{r.productName}</p>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest">Empresa: {r.partnerName}</p>
+          <p className="font-bold text-slate-900">{r.name}</p>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest">{r.type} • {r.category || 'SaaS'}</p>
         </div>
       )
     },
-    { header: 'Solicitante', accessor: (r) => r.requesterName },
-    { header: 'Data', accessor: (r) => formatDateBR(r.createdAt) },
-    { header: 'Status', accessor: (r) => (
-      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${r.status === 'pending' ? 'bg-blue-100 text-blue-700' : r.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-        {r.status === 'pending' ? 'Pendente' : r.status === 'approved' ? 'Aprovada' : 'Rejeitada'}
-      </span>
-    )},
+    {
+      header: 'Descrição',
+      accessor: (r) => (
+        <p className="text-xs text-slate-500 max-w-[200px] truncate" title={r.short_description || r.description || ''}>
+          {r.short_description || r.description || '—'}
+        </p>
+      )
+    },
+    {
+      header: 'Preço',
+      accessor: (r) => (
+        <span className="text-xs font-bold">
+          {r.price_cents > 0 ? `R$ ${(r.price_cents / 100).toFixed(2)}/${r.billing_period === 'yearly' ? 'ano' : 'mês'}` : 'Grátis'}
+        </span>
+      )
+    },
+    {
+      header: 'Status',
+      accessor: (r) => requestStatusBadge(r.status)
+    },
+    {
+      header: 'Data',
+      accessor: (r) => <span className="text-xs text-slate-400">{formatDateBR(r.created_at)}</span>
+    },
     {
       header: 'Ações',
-      align: 'right',
       accessor: (r) => (
-        <button onClick={() => { setSelectedRequest(r); setIsRequestModalOpen(true); }} className="text-xs font-bold text-[#1D4ED8] hover:underline">
-          Ver Detalhes
-        </button>
+        <div className="flex gap-2">
+          {(r.status === 'submitted' || r.status === 'under_review') && (
+            <>
+              <button
+                onClick={() => handleApprove(r.id)}
+                disabled={actionLoading}
+                className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-green-700 disabled:opacity-50"
+              >
+                Aprovar
+              </button>
+              <button
+                onClick={() => handleOpenReject(r)}
+                disabled={actionLoading}
+                className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-red-100 disabled:opacity-50"
+              >
+                Rejeitar
+              </button>
+            </>
+          )}
+          {r.status === 'approved' && r.created_product_id && (
+            <a
+              href={`/product/${r.created_product_id}`}
+              className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-100"
+            >
+              Ver Produto
+            </a>
+          )}
+          {r.status === 'rejected' && r.admin_notes && (
+            <span className="text-[10px] text-red-400 italic max-w-[150px] truncate" title={r.admin_notes}>
+              💬 {r.admin_notes}
+            </span>
+          )}
+        </div>
       )
     }
   ];
 
+  const filterButtons: { value: RequestFilter; label: string }[] = [
+    { value: 'all', label: `Todas (${requests.length})` },
+    { value: 'submitted', label: `Enviadas (${requests.filter(r => r.status === 'submitted').length})` },
+    { value: 'under_review', label: `Em Análise (${requests.filter(r => r.status === 'under_review').length})` },
+    { value: 'approved', label: `Aprovadas (${requests.filter(r => r.status === 'approved').length})` },
+    { value: 'rejected', label: `Rejeitadas (${requests.filter(r => r.status === 'rejected').length})` },
+  ];
+
   return (
-    <>
-      <AdminTopbar title="Gestão de Parceiros" actions={
-        <button onClick={() => handleOpenPartnerModal()} className="px-4 py-2 bg-[#1D4ED8] text-white rounded-xl text-xs md:text-sm font-bold shadow-lg shadow-[#1D4ED8]/20 transition-all">
-          + Novo Parceiro
-        </button>
-      } />
-      
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8">
-        <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar">
-          <button onClick={() => setActiveTab('active')} className={`px-6 py-3 text-xs md:text-sm font-bold transition-all border-b-2 uppercase tracking-widest ${activeTab === 'active' ? 'border-[#1D4ED8] text-[#1D4ED8]' : 'border-transparent text-slate-400'}`}>
-            Parceiros Ativos
+    <div className="flex-1 flex flex-col">
+      <AdminTopbar
+        title="Parceiros & Solicitações"
+      />
+
+      <div className="flex-1 p-6 md:p-10 space-y-8">
+        {/* Tabs */}
+        <div className="flex bg-slate-100/50 p-1.5 rounded-2xl border border-white w-fit">
+          <button
+            onClick={() => setActiveTab('partners')}
+            className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'partners' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Parceiros ({partners.length})
           </button>
-          <button onClick={() => setActiveTab('requests')} className={`px-6 py-3 text-xs md:text-sm font-bold transition-all border-b-2 uppercase tracking-widest ${activeTab === 'requests' ? 'border-[#1D4ED8] text-[#1D4ED8]' : 'border-transparent text-slate-400'}`}>
-            Solicitações {requests.filter(r => r.status === 'pending').length > 0 && <span className="ml-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{requests.filter(r => r.status === 'pending').length}</span>}
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === 'requests' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            Solicitações ({requests.length})
           </button>
         </div>
 
-        {activeTab === 'active' ? (
-          partners.length > 0 ? <DataTable data={partners} columns={partnerColumns} /> : <EmptyState title="Nenhum parceiro" description="Adicione seu primeiro parceiro estratégico." icon="🤝" />
-        ) : (
-          requests.length > 0 ? <DataTable data={requests.sort((a,b) => b.createdAt.localeCompare(a.createdAt))} columns={requestColumns} /> : <EmptyState title="Sem solicitações" description="Solicitações de publicação aparecerão aqui." icon="📩" />
+        {/* Partners Tab */}
+        {activeTab === 'partners' && (
+          partners.length === 0 ? (
+            <EmptyState
+              icon="🤝"
+              title="Nenhum parceiro cadastrado"
+              description="Os parceiros aparecerão aqui quando usuários enviarem solicitações de publicação."
+            />
+          ) : (
+            <DataTable
+              data={partners}
+              columns={partnerColumns}
+            />
+          )
+        )}
+
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
+          <div className="space-y-6">
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
+              {filterButtons.map(fb => (
+                <button
+                  key={fb.value}
+                  onClick={() => setRequestFilter(fb.value)}
+                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all ${requestFilter === fb.value
+                    ? 'bg-slate-900 border-slate-900 text-white'
+                    : 'bg-white border-slate-100 text-slate-400 hover:border-blue-200'
+                    }`}
+                >
+                  {fb.label}
+                </button>
+              ))}
+            </div>
+
+            {filteredRequests.length === 0 ? (
+              <EmptyState
+                icon="📩"
+                title="Nenhuma solicitação encontrada"
+                description="As solicitações dos parceiros aparecerão aqui."
+              />
+            ) : (
+              <DataTable
+                data={filteredRequests}
+                columns={requestColumns}
+              />
+            )}
+          </div>
         )}
       </div>
 
-      {/* Modal de Parceiro */}
-      <Modal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} title={editingPartner ? 'Editar Parceiro' : 'Novo Parceiro'} footer={
-        <button onClick={handleSavePartner} className="px-6 py-2 bg-[#1D4ED8] text-white rounded-xl text-sm font-bold">Salvar Parceiro</button>
-      }>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <FormField label="Logomarca">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
-                  {partnerForm.logoUrl ? <img src={partnerForm.logoUrl} className="w-full h-full object-contain" /> : <span className="text-2xl opacity-20">🖼️</span>}
-                </div>
-                <button onClick={() => logoInputRef.current?.click()} className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all">Upload</button>
-                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={handleLogoUpload} />
-              </div>
-            </FormField>
-            <FormField label="Nome da Empresa"><Input value={partnerForm.name} onChange={(e) => setPartnerForm({...partnerForm, name: e.target.value})} /></FormField>
-            <FormField label="Tipo"><Select value={partnerForm.type} onChange={(e) => setPartnerForm({...partnerForm, type: e.target.value as any})}><option value="Tecnologia">Tecnologia</option><option value="Consultoria">Consultoria</option><option value="Fornecedor">Fornecedor</option></Select></FormField>
+      {/* Reject Modal */}
+      <Modal
+        isOpen={isRejectModalOpen}
+        onClose={() => { setIsRejectModalOpen(false); setSelectedRequest(null); }}
+        title="Rejeitar Solicitação"
+        size="md"
+      >
+        <div className="space-y-6">
+          {selectedRequest && (
+            <div className="bg-slate-50 rounded-2xl p-5">
+              <p className="font-bold text-sm">{selectedRequest.name}</p>
+              <p className="text-xs text-slate-400 mt-1">{selectedRequest.short_description || selectedRequest.description}</p>
+            </div>
+          )}
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-3">
+              Motivo da Rejeição (visível para o solicitante)
+            </label>
+            <textarea
+              rows={3}
+              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-sm outline-none focus:bg-white focus:ring-2 focus:ring-red-600/10 transition-all resize-none"
+              placeholder="Explique o motivo..."
+              value={rejectNotes}
+              onChange={e => setRejectNotes(e.target.value)}
+            />
           </div>
-          <div className="space-y-4">
-            <FormField label="Nome do Contato"><Input value={partnerForm.contactName} onChange={(e) => setPartnerForm({...partnerForm, contactName: e.target.value})} /></FormField>
-            <FormField label="E-mail"><Input value={partnerForm.email} onChange={(e) => setPartnerForm({...partnerForm, email: e.target.value})} /></FormField>
-            <FormField label="Status"><Select value={partnerForm.status} onChange={(e) => setPartnerForm({...partnerForm, status: e.target.value as any})}><option value="active">Ativo</option><option value="inactive">Inativo</option></Select></FormField>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsRejectModalOpen(false)}
+              className="px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={actionLoading}
+              className="px-8 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 disabled:opacity-50"
+            >
+              {actionLoading ? 'Rejeitando...' : 'Confirmar Rejeição'}
+            </button>
           </div>
         </div>
       </Modal>
-
-      {/* Modal de Solicitação */}
-      <Modal isOpen={isRequestModalOpen} onClose={() => setIsRequestModalOpen(false)} title="Detalhes da Solicitação" footer={
-        selectedRequest?.status === 'pending' && (
-          <div className="flex gap-3">
-            <button onClick={() => handleRequestAction(selectedRequest!.id, 'rejected')} className="px-4 py-2 text-sm font-bold text-red-500">Rejeitar</button>
-            <button onClick={() => handleRequestAction(selectedRequest!.id, 'approved')} className="px-6 py-2 bg-green-600 text-white rounded-xl text-sm font-bold">Aprovar e Criar Parceiro</button>
-          </div>
-        )
-      }>
-        {selectedRequest && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div><p className="text-[10px] font-black uppercase text-slate-400">Empresa</p><p className="font-bold">{selectedRequest.partnerName}</p></div>
-              <div><p className="text-[10px] font-black uppercase text-slate-400">Produto</p><p className="font-bold">{selectedRequest.productName}</p></div>
-              <div><p className="text-[10px] font-black uppercase text-slate-400">Solicitante</p><p className="font-bold">{selectedRequest.requesterName}</p></div>
-              <div><p className="text-[10px] font-black uppercase text-slate-400">E-mail</p><p className="font-bold">{selectedRequest.requesterEmail}</p></div>
-            </div>
-            <div><p className="text-[10px] font-black uppercase text-slate-400 mb-1">Descrição</p><p className="text-sm text-slate-600 leading-relaxed">{selectedRequest.description}</p></div>
-          </div>
-        )}
-      </Modal>
-    </>
+    </div>
   );
 }

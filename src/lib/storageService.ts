@@ -1,4 +1,5 @@
 import { AdminProduct, AdminPartner, AdminUser, AdminSettings, PublicationRequest } from '../types/admin';
+import { AdminNotification } from '../types/notifications';
 import { HomeContentConfig } from '../types/content';
 import { AnalyticsEvent } from '../types/analytics';
 import { APP_CONFIG } from '../config/appConfig';
@@ -11,6 +12,7 @@ const KEYS = {
   PUBLICATION_REQUESTS: 'ENT_ADMIN_PUBLICATION_REQUESTS',
   HOME_CONTENT: 'ENT_HOME_CONTENT',
   ANALYTICS: 'ENT_ANALYTICS_EVENTS',
+  NOTIFICATIONS: 'ENT_ADMIN_NOTIFICATIONS',
 };
 
 export const storageService = {
@@ -21,8 +23,13 @@ export const storageService = {
     } catch (e) { return []; }
   },
   saveProducts(products: AdminProduct[]) {
-    localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    try {
+      localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+      alert('Erro: Limite de armazenamento excedido. Tente remover alguns itens antes de salvar novos.');
+    }
   },
   getPartners(): AdminPartner[] {
     try {
@@ -31,8 +38,13 @@ export const storageService = {
     } catch (e) { return []; }
   },
   savePartners(partners: AdminPartner[]) {
-    localStorage.setItem(KEYS.PARTNERS, JSON.stringify(partners));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    try {
+      localStorage.setItem(KEYS.PARTNERS, JSON.stringify(partners));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+      alert('Erro: Limite de armazenamento excedido ao salvar parceiros.');
+    }
   },
   getUsers(): AdminUser[] {
     try {
@@ -41,8 +53,13 @@ export const storageService = {
     } catch (e) { return []; }
   },
   saveUsers(users: AdminUser[]) {
-    localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    try {
+      localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+      alert('Erro: Limite de armazenamento excedido ao salvar usuários.');
+    }
   },
   getPublicationRequests(): PublicationRequest[] {
     try {
@@ -51,8 +68,13 @@ export const storageService = {
     } catch (e) { return []; }
   },
   savePublicationRequests(requests: PublicationRequest[]) {
-    localStorage.setItem(KEYS.PUBLICATION_REQUESTS, JSON.stringify(requests));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    try {
+      localStorage.setItem(KEYS.PUBLICATION_REQUESTS, JSON.stringify(requests));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+      alert('Erro: Limite de armazenamento excedido ao salvar solicitações.');
+    }
   },
   getSettings(): AdminSettings {
     try {
@@ -61,14 +83,19 @@ export const storageService = {
     } catch (e) { return { platformName: APP_CONFIG.name, theme: 'Executivo Light', allowPublicPrices: false, requirePartnerApproval: true }; }
   },
   saveSettings(settings: AdminSettings) {
-    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
-    window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    try {
+      localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+      alert('Erro: Limite de armazenamento excedido ao salvar configurações.');
+    }
   },
   getHomeContent(): HomeContentConfig {
     try {
       const data = localStorage.getItem(KEYS.HOME_CONTENT);
-      return data ? JSON.parse(data) : { highlights: [], suggested: [], videocasts: [] };
-    } catch (e) { return { highlights: [], suggested: [], videocasts: [] }; }
+      return data ? JSON.parse(data) : { hero: [], highlights: [], suggested: [], videocasts: [] };
+    } catch (e) { return { hero: [], highlights: [], suggested: [], videocasts: [] }; }
   },
   saveHomeContent(config: HomeContentConfig) {
     localStorage.setItem(KEYS.HOME_CONTENT, JSON.stringify(config));
@@ -93,6 +120,45 @@ export const storageService = {
   },
   clearAnalytics() {
     this.saveAnalyticsEvents([]);
+  },
+
+  // Notifications
+  getNotifications(): AdminNotification[] {
+    try {
+      const data = localStorage.getItem(KEYS.NOTIFICATIONS);
+      return data ? JSON.parse(data) : [];
+    } catch (e) { return []; }
+  },
+  saveNotifications(notifications: AdminNotification[]) {
+    try {
+      localStorage.setItem(KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+      window.dispatchEvent(new Event('ENT_STORAGE_UPDATED'));
+    } catch (e) {
+      console.error('Storage limit exceeded', e);
+    }
+  },
+  addNotification(notification: Omit<AdminNotification, 'id' | 'createdAt' | 'read'>) {
+    const notifications = this.getNotifications();
+    const newNotification: AdminNotification = {
+      ...notification,
+      id: Math.random().toString(36).substring(2, 11),
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    notifications.unshift(newNotification);
+    this.saveNotifications(notifications);
+  },
+  markAsRead(id: string) {
+    const notifications = this.getNotifications();
+    const index = notifications.findIndex(n => n.id === id);
+    if (index !== -1) {
+      notifications[index].read = true;
+      this.saveNotifications(notifications);
+    }
+  },
+  markAllAsRead() {
+    const notifications = this.getNotifications().map(n => ({ ...n, read: true }));
+    this.saveNotifications(notifications);
   },
 
   seedInitialData() {
@@ -140,7 +206,11 @@ export const storageService = {
   },
 
   resetAll() {
+    const authUser = localStorage.getItem('ENT_AUTH_USER');
     localStorage.clear();
+    if (authUser) {
+      localStorage.setItem('ENT_AUTH_USER', authUser);
+    }
     this.seedInitialData();
   }
 };

@@ -2,30 +2,39 @@ import { useState, useEffect, useMemo } from 'react';
 import AdminTopbar from '../../components/admin/AdminTopbar';
 import StatCard from '../../components/admin/StatCard';
 import DataTable, { Column } from '../../components/admin/DataTable';
-import { storageService } from '../../lib/storageService';
+import { supabaseService } from '../../lib/supabaseService';
+import { supabase } from '../../lib/supabase';
 import { AdminProduct } from '../../types/admin';
 import { AnalyticsEvent } from '../../types/analytics';
+import { analyticsRepo } from '@/lib/repositories/analyticsRepo';
 import { formatBRLFromCents } from '../../lib/format';
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     products: [] as AdminProduct[],
     events: [] as AnalyticsEvent[],
     requests: [] as any[]
   });
+  const [dbMetrics, setDbMetrics] = useState<any>(null);
 
-  const loadData = () => {
-    setData({
-      products: storageService.getProducts(),
-      events: storageService.getAnalyticsEvents(),
-      requests: storageService.getPublicationRequests()
-    });
+  const loadData = async () => {
+    setLoading(true);
+    const [products, events, requests, metrics] = await Promise.all([
+      supabaseService.getProducts(),
+      supabaseService.getAnalyticsEvents(),
+      supabaseService.getPublicationRequests(),
+      analyticsRepo.getDashboardMetrics()
+    ]);
+    setData({ products, events, requests });
+    if (metrics) {
+      setDbMetrics(metrics);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
     loadData();
-    window.addEventListener('ENT_STORAGE_UPDATED', loadData);
-    return () => window.removeEventListener('ENT_STORAGE_UPDATED', loadData);
   }, []);
 
   // Cálculos de Período
@@ -44,7 +53,7 @@ export default function Dashboard() {
     const currentRevenue = currentEvents
       .filter(e => e.type === 'checkout_confirmed')
       .reduce((acc, e) => acc + (e.meta?.priceCents || 0), 0);
-    
+
     const previousRevenue = previousEvents
       .filter(e => e.type === 'checkout_confirmed')
       .reduce((acc, e) => acc + (e.meta?.priceCents || 0), 0);
@@ -73,7 +82,7 @@ export default function Dashboard() {
     // 4. ACESSOS SEMANAIS (Gráfico)
     const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
     const todayIndex = (now.getDay() + 6) % 7; // Ajuste para Seg=0
-    
+
     const dailyViews = Array(7).fill(0);
     currentEvents.filter(e => e.type === 'page_view').forEach(e => {
       const d = new Date(e.timestamp);
@@ -94,7 +103,7 @@ export default function Dashboard() {
 
     if (revenueGrowth > 10) summary = "Excelente desempenho! O faturamento cresceu significativamente este mês. Considere expandir o mix de produtos.";
     else if (conversionRate < 2 && productViews > 5) summary = "Atenção: Muitos usuários visualizam produtos, mas poucos convertem. Revise as descrições e CTAs.";
-    else if (data.requests.filter(r => r.status === 'pending').length > 0) summary = "Você possui novas solicitações de publicação pendentes. Revise os parceiros para manter o marketplace atualizado.";
+    else if (data.requests.filter(r => r.status === 'submitted').length > 0) summary = "Você possui novas solicitações de publicação pendentes. Revise os parceiros para manter o marketplace atualizado.";
 
     return {
       revenue: formatBRLFromCents(currentRevenue),
@@ -117,69 +126,88 @@ export default function Dashboard() {
 
   return (
     <>
-      <AdminTopbar title="Dashboard Real" />
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <StatCard 
-            label="Faturamento (30d)" 
-            value={metrics.revenue} 
-            trend={{ value: `${metrics.revenueGrowth.toFixed(1)}%`, isPositive: metrics.revenueGrowth >= 0 }}
-            icon="💰" color="green"
-          />
-          <StatCard 
-            label="Conversões (30d)" 
-            value={metrics.clients} 
-            trend={{ value: `${metrics.clientGrowth.toFixed(1)}%`, isPositive: metrics.clientGrowth >= 0 }}
-            icon="👤" color="blue"
-          />
-          <StatCard 
-            label="Soluções Ativas" 
-            value={metrics.activeProducts} 
-            trend={{ value: `${metrics.pendingProducts} pendentes`, isPositive: metrics.pendingProducts === 0 }}
-            icon="🚀" color="purple"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-2xl border border-slate-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div>
-                <h4 className="text-lg font-black">Acessos da Semana</h4>
-                <p className="text-sm text-slate-500">Visualizações de página por dia</p>
-              </div>
-              <div className="text-right">
-                <h2 className="text-2xl font-black">{metrics.totalViews.toLocaleString()}</h2>
-                <span className="text-xs font-bold text-slate-400 uppercase">Page Views</span>
-              </div>
+      <AdminTopbar title="Painel de Controle" />
+      <div className="p-4 md:p-12 max-w-7xl mx-auto space-y-12 md:space-y-20">
+        {loading ? (
+          <div className="h-64 flex items-center justify-center border-4 border-[#0B1220] bg-white">
+            <div className="text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Sincronizando Metrics Center...</div>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 border-2 border-[#0B1220]">
+              <StatCard
+                label="Conversões (Sumário)"
+                value={dbMetrics?.monthlyConversions ?? metrics.clients}
+                trend={{ value: `${metrics.clientGrowth.toFixed(1)}%`, isPositive: metrics.clientGrowth >= 0 }}
+                icon="💰" color="green"
+              />
+              <StatCard
+                label="Sessões Únicas (30d)"
+                value={metrics.clients}
+                trend={{ value: `${metrics.clientGrowth.toFixed(1)}%`, isPositive: metrics.clientGrowth >= 0 }}
+                icon="👤" color="blue"
+              />
+              <StatCard
+                label="Soluções Ativas"
+                value={dbMetrics?.activeProducts ?? metrics.activeProducts}
+                trend={{ value: `${dbMetrics?.pendingRequests ?? metrics.pendingProducts} pendentes`, isPositive: (dbMetrics?.pendingRequests ?? metrics.pendingProducts) === 0 }}
+                icon="🚀" color="black"
+              />
             </div>
-            <div className="flex items-end justify-between h-48 gap-2 px-2">
-              {metrics.dailyViews.map((v, i) => {
-                const max = Math.max(...metrics.dailyViews, 1);
-                const height = (v / max) * 100;
-                return (
-                  <div key={i} className="flex flex-col items-center flex-1 gap-2 group relative">
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">{v}</div>
-                    <div className="w-full bg-slate-100 rounded-t-lg transition-all hover:bg-[#0052cc]/40" style={{ height: `${height}%` }}></div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase">{['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][i]}</span>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 border-2 border-[#0B1220]">
+              <div className="lg:col-span-2 bg-white p-8 md:p-12 border-r-2 border-[#0B1220]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-8 mb-16 px-4 border-l-8 border-[#1D4ED8]">
+                  <div>
+                    <h4 className="text-2xl font-black uppercase tracking-tighter">Acessos da Semana</h4>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-2">Métricas de tráfego em tempo real</p>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <div className="text-right">
+                    <h2 className="text-5xl font-black text-[#0B1220] tracking-tighter uppercase">{metrics.totalViews.toLocaleString()}</h2>
+                    <span className="text-[10px] font-black text-[#1D4ED8] uppercase tracking-[0.3em]">Total Page Views</span>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between h-56 gap-4 px-4 overflow-hidden">
+                  {metrics.dailyViews.map((v, i) => {
+                    const max = Math.max(...metrics.dailyViews, 1);
+                    const height = (v / max) * 100;
+                    return (
+                      <div key={i} className="flex flex-col items-center flex-1 gap-4 group relative">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#0B1220] text-white text-[10px] font-black px-3 py-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 border-2 border-white">{v}</div>
+                        <div className="w-full bg-slate-100 transition-all hover:bg-[#FF4D00] border-2 border-[#0B1220] border-b-0" style={{ height: `${height}%` }}></div>
+                        <span className="text-[10px] font-black text-[#0B1220] uppercase tracking-widest">{['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][i]}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-          <div className="bg-[#0052cc] p-6 md:p-8 rounded-2xl text-white flex flex-col justify-between">
-            <div>
-              <h4 className="text-xl font-black mb-4">Resumo Operacional</h4>
-              <p className="text-white/80 text-sm leading-relaxed">{metrics.summary}</p>
+              <div className="bg-[#0B1220] p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden h-full">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#1D4ED8]/20 -mr-16 -mt-16 blur-3xl"></div>
+                <div>
+                  <div className="inline-block bg-[#FF4D00] text-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] mb-8">Status Geral</div>
+                  <h4 className="text-3xl font-black mb-6 uppercase tracking-tighter leading-none">Resumo Operacional</h4>
+                  <p className="text-slate-400 text-lg leading-snug font-medium uppercase tracking-tight">{metrics.summary}</p>
+                </div>
+                <button className="w-full py-6 bg-[#1D4ED8] text-white font-black text-xs uppercase tracking-[0.5em] border-2 border-white hover:bg-[#FF4D00] transition-colors mt-12 shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] active:shadow-none active:translate-x-1 active:translate-y-1">Relatório Completo</button>
+              </div>
             </div>
-            <button className="w-full py-4 bg-white text-[#0052cc] font-black rounded-xl text-sm hover:bg-slate-50 transition-colors mt-8">Ver Relatório Completo</button>
-          </div>
-        </div>
 
-        <div className="space-y-4">
-          <h4 className="text-lg font-black">Soluções Recentes</h4>
-          <DataTable data={data.products.slice(0, 5)} columns={columns} />
-        </div>
+            <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                <div className="w-4 h-4 bg-[#FF4D00] border-2 border-[#0B1220]"></div>
+                <h4 className="text-2xl font-black uppercase tracking-tighter">Soluções Recentes</h4>
+              </div>
+              <div className="border-4 border-[#0B1220] shadow-[12px_12px_0px_0px_rgba(29,78,216,1)]">
+                <DataTable<AdminProduct> data={data.products.slice(0, 5)} columns={[
+                  { header: 'SOLUÇÃO / PRODUTO', accessor: (p) => <span className="font-black uppercase text-[#0B1220]">{p.name}</span> },
+                  { header: 'VERTICAL', accessor: (p) => <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{p.category}</span> },
+                  { header: 'VALOR NOMINAL', accessor: (p) => <span className="font-black text-[#1D4ED8]">{formatBRLFromCents(p.priceCents)}</span> }
+                ]} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

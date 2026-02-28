@@ -1,9 +1,10 @@
-export type ContentBlockType = 'paragraph' | 'heading' | 'quote' | 'bullet';
+export type ContentBlockType = 'paragraph' | 'heading' | 'quote' | 'bullet' | 'image';
 
 export interface ContentBlock {
   id: string;
   type: ContentBlockType;
   text: string;
+  imageUrl?: string; // Para blocos do tipo image
 }
 
 export interface WeeklyHighlight {
@@ -45,7 +46,20 @@ export interface VideoCast {
   order: number;
 }
 
+export interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  altText?: string;
+  title?: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  linkUrl?: string;
+  status: 'active' | 'inactive';
+  order: number;
+}
+
 export interface HomeContentConfig {
+  hero: HeroSlide[];
   highlights: WeeklyHighlight[];
   suggested: SuggestedProductBlock[];
   videocasts: VideoCast[];

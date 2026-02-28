@@ -1,5 +1,5 @@
-import { AnalyticsEvent, AnalyticsEventType } from '../types/analytics';
-import { storageService } from './storageService';
+import { AnalyticsEventType } from '@/types/analytics';
+import { analyticsRepo } from '@/lib/repositories/analyticsRepo';
 
 const SESSION_KEY = 'ENT_SESSION_ID';
 
@@ -19,16 +19,11 @@ export const analytics = {
   /**
    * Registra um novo evento no sistema
    */
-  track(type: AnalyticsEventType, meta?: Record<string, any>, route?: string) {
-    const event: AnalyticsEvent = {
-      id: Math.random().toString(36).substring(2, 9),
+  track(type: AnalyticsEventType, meta?: Record<string, any>) {
+    analyticsRepo.insertEvent({
       type,
-      timestamp: new Date().toISOString(),
       sessionId: this.getSessionId(),
-      route: route || window.location.pathname,
       meta
-    };
-
-    storageService.appendAnalyticsEvent(event);
+    });
   }
 };

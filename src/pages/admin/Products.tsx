@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import AdminTopbar from '../../components/admin/AdminTopbar';
-import DataTable, { Column } from '../../components/admin/DataTable';
-import Modal from '../../components/admin/Modal';
-import FormField, { Input, Select, Textarea } from '../../components/admin/FormField';
-import EmptyState from '../../components/admin/EmptyState';
-import { storageService } from '../../lib/storageService';
-import { AdminProduct, ProductCategory, ProductStatus } from '../../types/admin';
-import { formatBRLFromCents } from '../../lib/format';
-import { isValidImageFile, readFileAsDataURL } from '../../lib/image';
+import AdminTopbar from '@/components/admin/AdminTopbar';
+import DataTable, { Column } from '@/components/admin/DataTable';
+import Modal from '@/components/admin/Modal';
+import FormField, { Input, Select, Textarea } from '@/components/admin/FormField';
+import EmptyState from '@/components/admin/EmptyState';
+import { supabase } from '@/lib/supabase';
+import { storageService } from '@/lib/storageService';
+import { supabaseService } from '@/lib/supabaseService';
+import { AdminProduct, ProductCategory, ProductStatus } from '@/types/admin';
+import { formatBRLFromCents } from '@/lib/format';
+import { isValidImageFile } from '@/lib/image';
+import { storageUploadRepo } from '@/lib/repositories/storageUploadRepo';
 
 type TabType = 'basic' | 'price' | 'images' | 'benefits' | 'testimonial' | 'ctas';
 
 export default function Products() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
@@ -20,44 +24,51 @@ export default function Products() {
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
 
-  // Form State
+  // States para Formulário
   const [formData, setFormData] = useState<Partial<AdminProduct>>({
     name: '',
     slug: '',
     category: 'SaaS',
     status: 'active',
     priceCents: 0,
+    originalPriceCents: 0,
     billingPeriod: 'monthly',
     priceLabel: 'INVESTIMENTO MENSAL',
     shortDescription: '',
     longDescription: '',
     heroImageUrl: '',
     logoImageUrl: '',
-    benefits: [],
+    videoUrl: '',
+    benefits: [
+      { id: Math.random().toString(36).substr(2, 9), text: '' }
+    ],
     testimonial: {
       enabled: false,
       stars: 5,
       quote: '',
       authorName: '',
       authorRole: '',
-      company: '',
+      authorAvatarUrl: ''
     },
-    ctaPrimaryLabel: 'Contratar agora',
-    ctaSecondaryLabel: 'Agendar conversa',
+    gallery: [],
+    ctaLabel: 'SABER MAIS',
+    ctaLink: ''
   });
 
+  // Refs para Uploads
   const heroInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  const loadProducts = async () => {
+    setLoading(true);
+    const data = await supabaseService.getProducts();
+    setProducts(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
     loadProducts();
-    window.addEventListener('ENT_STORAGE_UPDATED', loadProducts);
-    return () => window.removeEventListener('ENT_STORAGE_UPDATED', loadProducts);
   }, []);
-
-  const loadProducts = () => {
-    setProducts(storageService.getProducts());
-  };
 
   const handleOpenModal = (product?: AdminProduct) => {
     if (product) {
@@ -71,12 +82,14 @@ export default function Products() {
         category: 'SaaS',
         status: 'active',
         priceCents: 0,
+        originalPriceCents: 0,
         billingPeriod: 'monthly',
         priceLabel: 'INVESTIMENTO MENSAL',
         shortDescription: '',
         longDescription: '',
         heroImageUrl: '',
         logoImageUrl: '',
+        videoUrl: '',
         benefits: [
           { id: Math.random().toString(36).substr(2, 9), text: '' }
         ],
@@ -107,10 +120,11 @@ export default function Products() {
     }
 
     try {
-      const dataUrl = await readFileAsDataURL(file);
-      setFormData(prev => ({ ...prev, [field]: dataUrl }));
-    } catch (err) {
-      alert('Erro ao carregar imagem.');
+      const type = field === 'heroImageUrl' ? 'hero' : 'logo';
+      const url = await storageUploadRepo.uploadProductImage(file, type);
+      setFormData(prev => ({ ...prev, [field]: url }));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao carregar imagem.');
     }
   };
 
@@ -135,45 +149,47 @@ export default function Products() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name || !formData.category || (formData.priceCents || 0) < 0) {
       alert('Preencha os campos obrigatórios básicos.');
       return;
     }
 
-    const allProducts = storageService.getProducts();
-    const slug = formData.slug || formData.name?.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
-    
-    const finalData = {
-      ...formData,
-      slug,
-      updatedAt: new Date().toISOString(),
-    } as AdminProduct;
+    try {
+      const slug = formData.slug || formData.name?.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '');
 
-    if (editingProduct) {
-      const updated = allProducts.map(p => 
-        p.id === editingProduct.id ? { ...p, ...finalData } : p
-      );
-      storageService.saveProducts(updated);
-    } else {
-      const newProduct: AdminProduct = {
-        ...finalData,
-        id: Math.random().toString(36).substr(2, 9),
-        createdAt: new Date().toISOString(),
-      };
-      storageService.saveProducts([...allProducts, newProduct]);
+      await supabaseService.saveProduct({
+        ...formData,
+        slug,
+        id: editingProduct?.id
+      });
+
+      await loadProducts();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Error saving product:', err);
+      alert('Erro ao salvar produto.');
     }
-
-    loadProducts();
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
-      const all = storageService.getProducts();
-      const updated = all.filter(p => p.id !== id);
-      storageService.saveProducts(updated);
-      loadProducts();
+      try {
+        if (supabase) {
+          const { error } = await supabase
+            .from('products')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+        } else {
+          const products = storageService.getProducts();
+          storageService.saveProducts(products.filter(p => p.id !== id));
+        }
+        await loadProducts();
+      } catch (err) {
+        alert('Erro ao excluir produto.');
+      }
     }
   };
 
@@ -186,67 +202,68 @@ export default function Products() {
 
   const columns: Column<AdminProduct>[] = [
     {
-      header: 'Produto',
+      header: 'SOLUÇÃO',
       accessor: (p) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center text-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-slate-50 border-2 border-[#0B1220] overflow-hidden flex items-center justify-center text-xl shrink-0">
             {p.logoImageUrl || p.heroImageUrl ? (
-              <img src={p.logoImageUrl || p.heroImageUrl} alt={p.name} className="w-full h-full object-cover" />
+              <img src={p.logoImageUrl || p.heroImageUrl} alt={p.name} className="w-full h-full object-cover grayscale" />
             ) : (
               '📦'
             )}
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-slate-900">{p.name}</span>
-            <span className="text-[10px] text-slate-400 font-mono">{p.slug}</span>
+            <span className="font-black text-[#0B1220] text-sm uppercase tracking-tighter">{p.name}</span>
+            <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{p.slug}</span>
           </div>
         </div>
       )
     },
     {
-      header: 'Categoria',
+      header: 'CATEGORIA',
       accessor: (p) => (
-        <span className="text-xs font-bold px-2 py-1 bg-slate-100 rounded uppercase tracking-wider">
+        <span className="text-[10px] font-black px-3 py-1 bg-white border-2 border-[#0B1220] uppercase tracking-widest text-[#0B1220]">
           {p.category}
         </span>
       )
     },
     {
-      header: 'Preço',
+      header: 'INVESTIMENTO',
       accessor: (p) => (
         <div className="flex flex-col">
-          <span className="font-bold text-slate-900">{formatBRLFromCents(p.priceCents)}</span>
-          <span className="text-[10px] text-slate-400 uppercase">{p.billingPeriod === 'yearly' ? 'Anual' : 'Mensal'}</span>
+          <span className="font-black text-[#0B1220] text-base">{formatBRLFromCents(p.priceCents)}</span>
+          <span className="text-[9px] text-[#1D4ED8] font-black uppercase tracking-widest">{p.billingPeriod === 'yearly' ? 'CICLO ANUAL' : 'CICLO MENSAL'}</span>
         </div>
       )
     },
     {
-      header: 'Status',
+      header: 'STATUS',
       accessor: (p) => (
         <span className={`
-          inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider
-          ${p.status === 'active' ? 'bg-green-100 text-green-700' : p.status === 'pending' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}
+          inline-flex items-center gap-2 px-3 py-1 border-2 font-black uppercase tracking-widest text-[9px]
+          ${p.status === 'active' ? 'bg-[#00FF41] text-[#0B1220] border-[#0B1220]' : p.status === 'pending' ? 'bg-[#1D4ED8] text-white border-[#0B1220]' : 'bg-slate-200 text-slate-600 border-[#0B1220]'}
         `}>
-          {p.status === 'active' ? 'Ativo' : p.status === 'pending' ? 'Pendente' : 'Inativo'}
+          <span className={`w-1.5 h-1.5 ${p.status === 'active' ? 'bg-[#0B1220]' : 'bg-white'}`}></span>
+          {p.status === 'active' ? 'OPERANTE' : p.status === 'pending' ? 'AGUARDANDO' : 'INATIVO'}
         </span>
       )
     },
     {
-      header: 'Ações',
+      header: 'AÇÕES',
       align: 'right',
       accessor: (p) => (
-        <div className="flex justify-end gap-2">
-          <button 
+        <div className="flex justify-end gap-3">
+          <button
             onClick={() => handleOpenModal(p)}
-            className="text-xs font-bold text-[#0052cc] hover:underline"
+            className="px-3 py-1 border-2 border-[#0052cc] text-[9px] font-black uppercase tracking-widest text-[#0052cc] hover:bg-[#0052cc] hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,82,204,1)] active:shadow-none"
           >
-            Editar
+            EDITAR
           </button>
-          <button 
+          <button
             onClick={() => handleDelete(p.id)}
-            className="text-xs font-bold text-red-500 hover:underline"
+            className="px-3 py-1 border-2 border-[#FF4D00] text-[9px] font-black uppercase tracking-widest text-[#FF4D00] hover:bg-[#FF4D00] hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(255,77,0,1)] active:shadow-none"
           >
-            Excluir
+            EXCLUIR
           </button>
         </div>
       )
@@ -264,99 +281,110 @@ export default function Products() {
 
   return (
     <>
-      <AdminTopbar 
-        title="Produtos" 
+      <AdminTopbar
+        title="Estoque de Soluções"
         actions={
-          <button 
+          <button
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2 px-4 py-2 bg-[#0052cc] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#0052cc]/20 hover:scale-[1.02] transition-all"
+            className="flex items-center gap-3 px-6 py-3 bg-[#1D4ED8] text-white font-black text-[10px] uppercase tracking-[0.3em] border-2 border-white shadow-[6px_6px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
           >
-            + Novo Produto
+            + Adicionar Item
           </button>
         }
       />
-      
-      <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-8">
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row flex-wrap gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex-1 min-w-[200px]">
-            <Input 
-              placeholder="Buscar por nome..." 
+
+      <div className="p-4 md:p-12 max-w-7xl mx-auto space-y-12">
+        {/* Filters - Brutalist Grid */}
+        <div className="flex flex-col md:flex-row border-4 border-[#0B1220] bg-white shadow-[8px_8px_0px_0px_rgba(11,18,32,1)]">
+          <div className="flex-1 md:border-r-2 border-[#0B1220]">
+            <input
+              placeholder="PESQUISAR SOLUÇÃO..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-16 px-8 bg-transparent text-[10px] font-black uppercase tracking-[0.2em] focus:bg-slate-50 focus:outline-none placeholder:text-slate-300"
             />
           </div>
-          <div className="grid grid-cols-2 sm:flex gap-4">
-            <div className="w-full sm:w-48">
-              <Select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-                <option value="">Categorias</option>
-                {['SaaS', 'Consultoria', 'IA', 'Operação', 'Financeiro', 'RH', 'Marketing'].map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </Select>
-            </div>
-            <div className="w-full sm:w-48">
-              <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                <option value="">Status</option>
-                <option value="active">Ativo</option>
-                <option value="pending">Pendente</option>
-                <option value="inactive">Inativo</option>
-              </Select>
-            </div>
+          <div className="flex border-t-2 md:border-t-0 border-[#0B1220]">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full md:w-56 h-16 px-6 bg-transparent text-[10px] font-black uppercase tracking-[0.2em] border-r-2 border-[#0B1220] focus:bg-slate-50 focus:outline-none cursor-pointer"
+            >
+              <option value="">CATEGORIAS</option>
+              {['SaaS', 'Consultoria', 'IA', 'Operação', 'Financeiro', 'RH', 'Marketing'].map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full md:w-56 h-16 px-6 bg-transparent text-[10px] font-black uppercase tracking-[0.2em] focus:bg-slate-50 focus:outline-none cursor-pointer"
+            >
+              <option value="">STATUS</option>
+              <option value="active">ATIVO</option>
+              <option value="pending">PENDENTE</option>
+              <option value="inactive">INATIVO</option>
+            </select>
           </div>
         </div>
 
-        {products.length === 0 ? (
-          <EmptyState 
-            title="Nenhum produto cadastrado" 
-            description="Comece adicionando sua primeira solução ao marketplace."
+        {loading ? (
+          <div className="h-64 flex items-center justify-center border-4 border-[#0B1220] bg-white">
+            <div className="text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Consultando Banco de Dados...</div>
+          </div>
+        ) : products.length === 0 ? (
+          <EmptyState
+            title="SISTEMA VAZIO"
+            description="NENHUMA SOLUÇÃO ENCONTRADA NO INVENTÁRIO. COMECE A CADASTRAR AGORA."
             icon="📦"
             action={
-              <button 
+              <button
                 onClick={() => handleOpenModal()}
-                className="bg-[#0052cc] text-white px-8 py-3 rounded-xl font-bold text-sm"
+                className="bg-[#1D4ED8] text-white px-10 py-5 font-black text-xs uppercase tracking-[0.4em] border-2 border-[#0B1220] shadow-[8px_8px_0px_0px_rgba(11,18,32,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
               >
-                Criar Primeiro Produto
+                CRIAR REGISTRO
               </button>
             }
           />
         ) : (
-          <DataTable data={filteredProducts} columns={columns} />
+          <div className="border-4 border-[#0B1220] shadow-[12px_12px_0px_0px_rgba(11,18,32,1)] bg-white overflow-hidden">
+            <DataTable data={filteredProducts} columns={columns} />
+          </div>
         )}
       </div>
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingProduct ? `Editar: ${editingProduct.name}` : 'Novo Produto'}
+        title={editingProduct ? `EDITAR: ${editingProduct.name}` : 'NOVO REGISTRO'}
         size="lg"
         footer={
-          <>
-            <button 
+          <div className="flex items-center justify-between w-full">
+            <button
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-900"
+              className="px-6 py-2 text-[10px] font-black text-[#0B1220] uppercase tracking-[0.3em] hover:text-[#FF4D00] transition-colors"
             >
-              Cancelar
+              DESCARTAR
             </button>
-            <button 
+            <button
               onClick={handleSave}
-              className="px-6 py-2 bg-[#0052cc] text-white rounded-xl text-sm font-bold"
+              className="px-10 py-4 bg-[#1D4ED8] text-white font-black text-xs uppercase tracking-[0.5em] border-2 border-[#0B1220] shadow-[6px_6px_0px_0px_rgba(11,18,32,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 active:translate-x-1.5 active:translate-y-1.5 transition-all"
             >
-              Salvar Produto
+              SALVAR SOLUÇÃO
             </button>
-          </>
+          </div>
         }
       >
         <div className="flex flex-col h-full max-h-[70vh]">
-          {/* Tabs Header */}
-          <div className="flex border-b border-slate-100 mb-6 overflow-x-auto scrollbar-hide">
+          {/* Tabs header - Brutalist Sticky */}
+          <div className="flex border-b-4 border-[#0B1220] mb-10 overflow-x-auto no-scrollbar shrink-0">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  px-4 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap border-b-2 transition-all
-                  ${activeTab === tab.id ? 'border-[#0052cc] text-[#0052cc]' : 'border-transparent text-slate-400 hover:text-slate-600'}
+                  px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-4 transition-all
+                  ${activeTab === tab.id ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-[#0B1220] hover:bg-slate-50'}
                 `}
               >
                 {tab.label}
@@ -364,29 +392,29 @@ export default function Products() {
             ))}
           </div>
 
-          {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+          {/* Tab Content - No scrollbar */}
+          <div className="flex-1 overflow-y-auto no-scrollbar pr-2 space-y-10 pb-8">
             {activeTab === 'basic' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <FormField label="Nome do Produto">
-                  <Input 
-                    value={formData.name} 
+                  <Input
+                    value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ex: DataStream Pro 360"
+                    placeholder="EX: DATASTREAM PRO 360"
                   />
                 </FormField>
                 <FormField label="Slug (URL Amigável)">
-                  <Input 
-                    value={formData.slug} 
+                  <Input
+                    value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="ex: datastream-pro"
+                    placeholder="EX: DATASTREAM-PRO"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1 uppercase">Deixe vazio para gerar automaticamente</p>
+                  <p className="text-[9px] font-black text-slate-300 mt-2 uppercase tracking-widest">DEIXE VAZIO PARA GERAR AUTOMATICAMENTE</p>
                 </FormField>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                   <FormField label="Categoria">
-                    <Select 
-                      value={formData.category} 
+                    <Select
+                      value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value as ProductCategory })}
                     >
                       <option value="SaaS">SaaS</option>
@@ -399,28 +427,28 @@ export default function Products() {
                     </Select>
                   </FormField>
                   <FormField label="Status">
-                    <Select 
-                      value={formData.status} 
+                    <Select
+                      value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as ProductStatus })}
                     >
-                      <option value="active">Ativo</option>
-                      <option value="pending">Pendente</option>
-                      <option value="inactive">Inativo</option>
+                      <option value="active">ATIVO</option>
+                      <option value="pending">PENDENTE</option>
+                      <option value="inactive">INATIVO</option>
                     </Select>
                   </FormField>
                 </div>
                 <FormField label="Descrição Curta (Marketplace)">
-                  <Input 
-                    value={formData.shortDescription} 
+                  <Input
+                    value={formData.shortDescription}
                     onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                    placeholder="1-2 linhas resumindo a solução"
+                    placeholder="RESUMO TÉCNICO DE 1-2 LINHAS"
                   />
                 </FormField>
                 <FormField label="Descrição Longa (Página de Detalhe)">
-                  <Textarea 
-                    value={formData.longDescription} 
+                  <Textarea
+                    value={formData.longDescription}
                     onChange={(e) => setFormData({ ...formData, longDescription: e.target.value })}
-                    placeholder="Texto detalhado sobre a solução..."
+                    placeholder="DETALHAMENTO DA SOLUÇÃO NO MARKETPLACE..."
                     rows={4}
                   />
                 </FormField>
@@ -428,34 +456,53 @@ export default function Products() {
             )}
 
             {activeTab === 'price' && (
-              <div className="space-y-6">
-                <FormField label="Preço (em centavos)">
-                  <Input 
+              <div className="space-y-8">
+                <FormField label="Valor de Investimento (Centavos)">
+                  <Input
                     type="number"
-                    value={formData.priceCents} 
+                    value={formData.priceCents}
                     onChange={(e) => setFormData({ ...formData, priceCents: parseInt(e.target.value) || 0 })}
-                    placeholder="Ex: 49990 para R$ 499,90"
+                    placeholder="EX: 49990 PARA R$ 499,90"
                   />
-                  <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Preview do Preço</span>
-                    <span className="text-xl font-black text-[#0052cc]">{formatBRLFromCents(formData.priceCents || 0)}</span>
+                </FormField>
+
+                <FormField label="Preço Original / De (Opcional - Centavos)">
+                  <Input
+                    type="number"
+                    value={formData.originalPriceCents || 0}
+                    onChange={(e) => setFormData({ ...formData, originalPriceCents: parseInt(e.target.value) || 0 })}
+                    placeholder="EX: 59990 PARA R$ 599,90"
+                  />
+                  <div className="mt-6 p-8 bg-slate-50 border-4 border-[#0B1220] relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-2 h-full bg-[#1D4ED8]"></div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Simulação de Exibição</span>
+                    <div className="flex flex-col">
+                      {formData.originalPriceCents && formData.originalPriceCents > (formData.priceCents || 0) && (
+                        <span className="text-sm font-bold text-red-500 line-through mb-1">
+                          De: {formatBRLFromCents(formData.originalPriceCents)}
+                        </span>
+                      )}
+                      <span className={`text-4xl font-black tracking-tighter ${formData.originalPriceCents ? 'text-green-600' : 'text-[#0B1220]'}`}>
+                        {formData.originalPriceCents ? 'Por: ' : ''}{formatBRLFromCents(formData.priceCents || 0)}
+                      </span>
+                    </div>
                   </div>
                 </FormField>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField label="Período de Cobrança">
-                    <Select 
-                      value={formData.billingPeriod} 
+                <div className="grid grid-cols-2 gap-6">
+                  <FormField label="Ciclo de Cobrança">
+                    <Select
+                      value={formData.billingPeriod}
                       onChange={(e) => setFormData({ ...formData, billingPeriod: e.target.value as 'monthly' | 'yearly' })}
                     >
-                      <option value="monthly">Mensal</option>
-                      <option value="yearly">Anual</option>
+                      <option value="monthly">MENSAL</option>
+                      <option value="yearly">ANUAL</option>
                     </Select>
                   </FormField>
                   <FormField label="Rótulo do Preço">
-                    <Input 
-                      value={formData.priceLabel} 
+                    <Input
+                      value={formData.priceLabel}
                       onChange={(e) => setFormData({ ...formData, priceLabel: e.target.value })}
-                      placeholder="Ex: INVESTIMENTO MENSAL"
+                      placeholder="EX: INVESTIMENTO MENSAL"
                     />
                   </FormField>
                 </div>
@@ -463,62 +510,75 @@ export default function Products() {
             )}
 
             {activeTab === 'images' && (
-              <div className="space-y-8">
-                <FormField label="Imagem Principal (Hero)">
-                  <div className="space-y-4">
-                    <div className="aspect-video bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center overflow-hidden">
+              <div className="space-y-10">
+                <FormField label="Impact Image (Hero)">
+                  <div className="space-y-6">
+                    <div className="aspect-video bg-slate-50 border-4 border-[#0B1220] flex items-center justify-center overflow-hidden relative shadow-[8px_8px_0px_0px_rgba(255,77,0,1)]">
                       {formData.heroImageUrl ? (
-                        <img src={formData.heroImageUrl} alt="Hero Preview" className="w-full h-full object-cover" />
+                        <img src={formData.heroImageUrl} alt="Hero Preview" className="w-full h-full object-cover grayscale" />
                       ) : (
-                        <span className="text-4xl text-slate-200">🖼️</span>
+                        <span className="text-6xl grayscale">🖼️</span>
                       )}
                     </div>
                     <input type="file" ref={heroInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'heroImageUrl')} />
-                    <button type="button" onClick={() => heroInputRef.current?.click()} className="w-full py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                      {formData.heroImageUrl ? 'Alterar Imagem Hero' : 'Selecionar Imagem Hero'}
+                    <button type="button" onClick={() => heroInputRef.current?.click()} className="w-full py-5 bg-white border-2 border-[#0B1220] text-[10px] font-black uppercase tracking-[0.3em] text-[#0B1220] hover:bg-[#0B1220] hover:text-white transition-all">
+                      {formData.heroImageUrl ? 'SUBSTITUIR IMPACT IMAGE' : 'VINCULAR IMPACT IMAGE'}
                     </button>
                   </div>
                 </FormField>
 
-                <FormField label="Logo / Miniatura">
-                  <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center overflow-hidden shrink-0">
+                <FormField label="Identidade Visual (Logo)">
+                  <div className="flex items-center gap-10">
+                    <div className="w-32 h-32 bg-slate-50 border-4 border-[#0B1220] flex items-center justify-center overflow-hidden shrink-0 shadow-[8px_8px_0px_0px_rgba(29,78,216,1)]">
                       {formData.logoImageUrl ? (
-                        <img src={formData.logoImageUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                        <img src={formData.logoImageUrl} alt="Logo Preview" className="w-full h-full object-cover grayscale" />
                       ) : (
-                        <span className="text-2xl text-slate-200">📦</span>
+                        <span className="text-4xl grayscale">📦</span>
                       )}
                     </div>
                     <div className="flex-1">
                       <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'logoImageUrl')} />
-                      <button type="button" onClick={() => logoInputRef.current?.click()} className="px-6 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                        {formData.logoImageUrl ? 'Alterar Logo' : 'Selecionar Logo'}
+                      <button type="button" onClick={() => logoInputRef.current?.click()} className="px-8 py-4 bg-white border-2 border-[#0B1220] text-[10px] font-black uppercase tracking-[0.2em] text-[#0B1220] hover:bg-[#0B1220] hover:text-white transition-all">
+                        {formData.logoImageUrl ? 'ALTERAR LOGO' : 'VINCULAR LOGO'}
                       </button>
                     </div>
                   </div>
+                </FormField>
+
+                <FormField label="Vídeo de Apresentação (YouTube ou Link Direto)">
+                  <Input
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                  {formData.videoUrl && (
+                    <div className="mt-4 aspect-video bg-black border-4 border-[#0B1220] flex items-center justify-center overflow-hidden">
+                      <div className="text-[10px] font-black uppercase tracking-[0.3em] text-white animate-pulse">Preview do Vídeo Ativo</div>
+                    </div>
+                  )}
                 </FormField>
               </div>
             )}
 
             {activeTab === 'benefits' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Lista de Benefícios</h4>
-                  <button onClick={handleAddBenefit} className="text-xs font-bold text-[#0052cc] hover:underline">+ Adicionar</button>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4 border-l-4 border-[#00FF41] pl-4 py-2">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0B1220]">Vantagens Técnicas</h4>
+                  <button onClick={handleAddBenefit} className="text-[9px] font-black uppercase tracking-widest text-[#1D4ED8] hover:underline">+ ADICIONAR ITEM</button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {formData.benefits?.map((benefit, index) => (
-                    <div key={benefit.id} className="flex gap-2">
+                    <div key={benefit.id} className="flex gap-4">
                       <div className="flex-1">
-                        <Input 
-                          value={benefit.text} 
+                        <Input
+                          value={benefit.text}
                           onChange={(e) => handleBenefitChange(benefit.id, e.target.value)}
-                          placeholder={`Benefício ${index + 1}`}
+                          placeholder={`BENEFÍCIO #${index + 1}`}
                         />
                       </div>
-                      <button 
+                      <button
                         onClick={() => handleRemoveBenefit(benefit.id)}
-                        className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                        className="w-14 bg-[#FF4D00] text-white border-2 border-[#0B1220] font-black hover:bg-[#0B1220] transition-colors"
                       >
                         ✕
                       </button>
@@ -529,55 +589,55 @@ export default function Products() {
             )}
 
             {activeTab === 'testimonial' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div>
-                    <h4 className="font-bold text-slate-900">Ativar Depoimento</h4>
-                    <p className="text-[10px] text-slate-400 uppercase">Exibir prova social na página do produto</p>
+              <div className="space-y-8">
+                <div className="flex items-center justify-between p-8 bg-[#0B1220] text-white border-b-8 border-[#1D4ED8] relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="text-xl font-black uppercase tracking-tighter">Prova Social</h4>
+                    <p className="text-[9px] text-[#1D4ED8] font-black uppercase tracking-[0.2em] mt-1">Exibir depoimento técnico no marketplace</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setFormData({ ...formData, testimonial: { ...formData.testimonial!, enabled: !formData.testimonial?.enabled } })}
-                    className={`w-12 h-6 rounded-full transition-all relative ${formData.testimonial?.enabled ? 'bg-green-500' : 'bg-slate-300'}`}
+                    className={`w-16 h-8 border-2 border-white transition-all relative ${formData.testimonial?.enabled ? 'bg-[#00FF41]' : 'bg-slate-700'}`}
                   >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.testimonial?.enabled ? 'left-7' : 'left-1'}`} />
+                    <div className={`absolute top-1 w-5 h-4 bg-white border-2 border-[#0B1220] transition-all ${formData.testimonial?.enabled ? 'left-8' : 'left-1'}`} />
                   </button>
                 </div>
 
                 {formData.testimonial?.enabled && (
-                  <div className="space-y-4">
-                    <FormField label="Estrelas">
-                      <Select 
-                        value={formData.testimonial.stars} 
+                  <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <FormField label="Qualificação (Estrelas)">
+                      <Select
+                        value={formData.testimonial.stars}
                         onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, stars: parseInt(e.target.value) as any } })}
                       >
-                        <option value="5">5 Estrelas</option>
-                        <option value="4">4 Estrelas</option>
-                        <option value="3">3 Estrelas</option>
-                        <option value="2">2 Estrelas</option>
-                        <option value="1">1 Estrela</option>
+                        <option value="5">5 ESTRELAS - MÁXIMO</option>
+                        <option value="4">4 ESTRELAS - ALTO</option>
+                        <option value="3">3 ESTRELAS - REGULAR</option>
+                        <option value="2">2 ESTRELAS - BAIXO</option>
+                        <option value="1">1 ESTRELA - CRÍTICO</option>
                       </Select>
                     </FormField>
-                    <FormField label="Depoimento (Aspas)">
-                      <Textarea 
-                        value={formData.testimonial.quote} 
+                    <FormField label="Citação (Feedback direto)">
+                      <Textarea
+                        value={formData.testimonial.quote}
                         onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, quote: e.target.value } })}
-                        placeholder="O que o cliente disse..."
+                        placeholder="O QUE O CLIENTE DECLAROU..."
                         rows={3}
                       />
                     </FormField>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                       <FormField label="Nome do Autor">
-                        <Input 
-                          value={formData.testimonial.authorName} 
+                        <Input
+                          value={formData.testimonial.authorName}
                           onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, authorName: e.target.value } })}
-                          placeholder="Ex: João Silva"
+                          placeholder="EX: JOÃO SILVA"
                         />
                       </FormField>
-                      <FormField label="Cargo">
-                        <Input 
-                          value={formData.testimonial.authorRole} 
+                      <FormField label="Cargo / Especialidade">
+                        <Input
+                          value={formData.testimonial.authorRole}
                           onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, authorRole: e.target.value } })}
-                          placeholder="Ex: Diretor de TI"
+                          placeholder="EX: DIRETOR DE TI"
                         />
                       </FormField>
                     </div>
@@ -587,19 +647,23 @@ export default function Products() {
             )}
 
             {activeTab === 'ctas' && (
-              <div className="space-y-4">
-                <FormField label="Texto Botão Primário (Contratar)">
-                  <Input 
-                    value={formData.ctaPrimaryLabel} 
+              <div className="space-y-6">
+                <div className="p-8 border-l-8 border-[#FF4D00] bg-slate-50 mb-8">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0B1220]">Configuração de Gatilhos (CTA)</h4>
+                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">Personalize os botões de ação do produto</p>
+                </div>
+                <FormField label="Label Primário (CONVERSÃO DIRETA)">
+                  <Input
+                    value={formData.ctaPrimaryLabel}
                     onChange={(e) => setFormData({ ...formData, ctaPrimaryLabel: e.target.value })}
-                    placeholder="Contratar agora"
+                    placeholder="EX: CONTRATAR SOLUÇÃO"
                   />
                 </FormField>
-                <FormField label="Texto Botão Secundário (Agendar)">
-                  <Input 
-                    value={formData.ctaSecondaryLabel} 
+                <FormField label="Label Secundário (AGENDAMENTO)">
+                  <Input
+                    value={formData.ctaSecondaryLabel}
                     onChange={(e) => setFormData({ ...formData, ctaSecondaryLabel: e.target.value })}
-                    placeholder="Agendar conversa"
+                    placeholder="EX: FALAR COM ESPECIALISTA"
                   />
                 </FormField>
               </div>

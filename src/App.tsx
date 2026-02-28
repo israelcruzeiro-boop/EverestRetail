@@ -1,39 +1,44 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
-import { storageService } from './lib/storageService';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Marketplace from './pages/Marketplace';
-import ProductDetail from './pages/ProductDetail';
-import Login from './pages/Login';
-import Checkout from './pages/Checkout';
-import Schedule from './pages/Schedule';
-import RequestPublication from './pages/RequestPublication';
-import ContentDetail from './pages/ContentDetail';
-import UserPanel from './pages/UserPanel';
+import { AuthProvider } from '@/context/AuthContext';
+import Layout from '@/components/Layout';
+import Home from '@/pages/Home';
+import Marketplace from '@/pages/Marketplace';
+import ProductDetail from '@/pages/ProductDetail';
+import Login from '@/pages/Login';
+import Checkout from '@/pages/Checkout';
+import Schedule from '@/pages/Schedule';
+import RequestPublication from '@/pages/RequestPublication';
+import ContentDetail from '@/pages/ContentDetail';
+import UserPanel from '@/pages/UserPanel';
+import BlogFeed from '@/pages/Blog/BlogFeed';
+import CreatePost from '@/pages/Blog/CreatePost';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
+import DailyBonusLoader from '@/components/DailyBonusLoader';
+import MissionStreakLoader from '@/components/MissionStreakLoader';
 
 // Admin
-import AdminLayout from './components/admin/AdminLayout';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminProducts from './pages/admin/Products';
-import AdminPartners from './pages/admin/Partners';
-import AdminUsers from './pages/admin/Users';
-import AdminSettings from './pages/admin/Settings';
-import AdminContent from './pages/admin/Content';
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminDashboard from '@/pages/admin/Dashboard';
+import AdminProducts from '@/pages/admin/Products';
+import AdminPartners from '@/pages/admin/Partners';
+import AdminUsers from '@/pages/admin/Users';
+import AdminSettings from '@/pages/admin/Settings';
+import AdminContent from '@/pages/admin/Content';
+import AdminSponsoredVideos from '@/pages/admin/SponsoredVideos';
+import AdminBlog from '@/pages/admin/Blog';
 
 // Guards
-import RequireAuth from './components/guards/RequireAuth';
-import RequireAdmin from './components/guards/RequireAdmin';
+import RequireAuth from '@/components/guards/RequireAuth';
+import RequireAdmin from '@/components/guards/RequireAdmin';
 
 export default function App() {
-  useEffect(() => {
-    storageService.seedInitialData();
-  }, []);
-
   return (
     <AuthProvider>
       <Router>
+        <AnalyticsTracker />
+        <DailyBonusLoader />
+        <MissionStreakLoader />
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Layout />}>
@@ -42,12 +47,14 @@ export default function App() {
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />
-            
+
             {/* Protected User Routes */}
             <Route path="painel" element={<RequireAuth><UserPanel /></RequireAuth>} />
             <Route path="checkout/:id" element={<RequireAuth><Checkout /></RequireAuth>} />
             <Route path="schedule/:id" element={<RequireAuth><Schedule /></RequireAuth>} />
             <Route path="request-publication" element={<RequireAuth><RequestPublication /></RequireAuth>} />
+            <Route path="blog" element={<RequireAuth><BlogFeed /></RequireAuth>} />
+            <Route path="blog/novo" element={<RequireAuth><CreatePost /></RequireAuth>} />
           </Route>
 
           {/* Admin Routes - Highly Protected */}
@@ -55,8 +62,10 @@ export default function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="partners" element={<AdminPartners />} />
+            <Route path="blog" element={<AdminBlog />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="content" element={<AdminContent />} />
+            <Route path="sponsored-videos" element={<AdminSponsoredVideos />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
