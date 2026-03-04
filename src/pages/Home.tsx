@@ -268,7 +268,7 @@ export default function Home() {
                       viewport={{ once: true }}
                       transition={{ delay: index * 0.1, duration: 0.8 }}
                       onClick={() => handleHighlightClick(h)}
-                      className={`group cursor-pointer rounded-[40px] md:rounded-[56px] overflow-hidden bg-white border border-slate-200/60 shadow-xl shadow-slate-200/40 hover:shadow-cyan-500/20 hover:border-cyan-500/40 transition-all duration-700 relative flex flex-col ${isMain ? 'md:col-span-8 h-[500px] md:h-[650px]' : 'md:col-span-4 h-[450px] md:h-[650px]'
+                      className={`group cursor-pointer rounded-[40px] md:rounded-[56px] overflow-hidden bg-white border-2 border-slate-200 shadow-xl shadow-slate-200/60 hover:shadow-cyan-500/30 hover:border-cyan-500 transition-all duration-700 relative flex flex-col ${isMain ? 'md:col-span-8 h-[380px] md:h-[480px]' : 'md:col-span-4 h-[350px] md:h-[480px]'
                         }`}
                     >
                       <div className="flex-1 overflow-hidden relative">
