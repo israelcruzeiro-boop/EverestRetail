@@ -213,7 +213,7 @@ export default function ContentDetail() {
                   );
                 case 'paragraph':
                 default:
-                  return <p key={block.id} className="text-lg md:text-2xl text-slate-400 leading-[1.8] font-medium my-6">{block.text}</p>;
+                  return <p key={block.id} className="text-lg md:text-2xl text-slate-400 leading-[1.8] font-medium my-6 whitespace-pre-wrap">{block.text}</p>;
               }
             })
           ) : (

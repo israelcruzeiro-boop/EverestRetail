@@ -664,8 +664,8 @@ export default function Content() {
                                 className="bg-slate-50 border-0 focus:bg-white"
                                 value={block.text}
                                 onChange={(e) => updateBlock(block.id, e.target.value)}
-                                rows={block.type === 'paragraph' ? 4 : 2}
-                                placeholder={block.type === 'heading' ? 'TÍTULO DA SEÇÃO...' : block.type === 'quote' ? 'CITAÇÃO DE IMPACTO...' : 'CONTEÚDO DO PARÁGRAFO...'}
+                                rows={block.type === 'paragraph' ? 12 : 5}
+                                placeholder={block.type === 'heading' ? 'TÍTULO DA SEÇÃO...' : block.type === 'quote' ? 'CITAÇÃO DE IMPACTO...' : 'COLE AQUI O CONTEÚDO... AS QUEBRAS DE LINHA SERÃO PRESERVADAS.'}
                               />
                             )}
                           </div>
