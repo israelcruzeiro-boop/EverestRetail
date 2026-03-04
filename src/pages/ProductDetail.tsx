@@ -14,7 +14,7 @@ import { ProductReview } from '@/types/admin';
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, refreshBalance } = useAuth();
+  const { isAuthenticated, refreshBalance, showToast } = useAuth();
   const [product, setProduct] = useState<AdminProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
@@ -88,8 +88,18 @@ export default function ProductDetail() {
     try {
       await navigator.clipboard.writeText(window.location.href);
       if (isAuthenticated) {
-        await coinRepo.rewardSolutionShare(product.id, 15);
-        await refreshBalance();
+        try {
+          const res = await coinRepo.rewardSolutionShare(product.id);
+          await refreshBalance();
+          if (res && res.awarded) {
+            showToast('Everest Coins!', res.amount, 'coins');
+            if (res.xp_awarded) {
+              setTimeout(() => showToast('XP Ganho!', res.xp_awarded, 'xp'), 1000);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
       alert('Link copiado para o clipboard!');
     } catch (err) {
@@ -344,16 +354,31 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              <div className="space-y-6 pt-10 border-t border-slate-100">
-                <div className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
-                  <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20">✓</div>
-                  <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight">Implementação assistida pelo time técnico ENT</p>
+              {((product.features && product.features.length > 0) || (product.benefits && product.benefits.length > 0)) && (
+                <div className="space-y-6 pt-10 border-t border-slate-100">
+                  {/* Priorizar Features, se não tiver, mostrar Benefits */}
+                  {product.features && product.features.length > 0 ? (
+                    product.features.map(feature => (
+                      <div key={feature.id} className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
+                        <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-lg shadow-blue-500/20">✓</div>
+                        <div className="pt-1">
+                          <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight">{feature.title}</p>
+                          {feature.description && (
+                            <p className="text-[9px] uppercase font-bold text-slate-400 mt-1 tracking-widest">{feature.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    product.benefits.map(benefit => (
+                      <div key={benefit.id} className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
+                        <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-lg shadow-blue-500/20">✓</div>
+                        <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight pt-1.5">{benefit.text}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
-                <div className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
-                  <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20">✓</div>
-                  <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight">Suporte prioritário e consultoria estratégica inclusa</p>
-                </div>
-              </div>
+              )}
 
               <div className="flex flex-col gap-4 pt-4">
                 <motion.button
@@ -362,7 +387,7 @@ export default function ProductDetail() {
                   onClick={() => navigate(`/checkout/${product.id}`)}
                   className="bg-slate-900 hover:bg-blue-600 text-white font-black py-8 rounded-[32px] text-sm uppercase tracking-[0.4em] transition-all shadow-xl shadow-slate-900/20"
                 >
-                  Contratar Agora
+                  {product.ctaPrimaryLabel || 'Contratar Agora'}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}

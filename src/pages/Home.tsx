@@ -9,12 +9,15 @@ import VideoModal from '@/components/VideoModal';
 import { getYouTubeThumbnail } from '@/lib/videoHelpers';
 import { useAuth } from '@/context/AuthContext';
 import { coinRepo } from '@/lib/repositories/coinRepo';
+import { blogRepo } from '@/lib/repositories/blogRepo';
+import { BlogPost } from '@/types/blog';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { isAuthenticated, refreshBalance } = useAuth();
+  const { isAuthenticated, refreshBalance, showToast } = useAuth();
   const [config, setConfig] = useState<HomeContentConfig>({ hero: [], highlights: [], suggested: [], videocasts: [] });
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [highlightedPosts, setHighlightedPosts] = useState<BlogPost[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<VideoCast | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,9 +25,10 @@ export default function Home() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const [homeConfig, allProducts] = await Promise.all([
+        const [homeConfig, allProducts, allPosts] = await Promise.all([
           homeContentRepo.getHomeConfig(),
-          supabase ? (await supabase.from('products').select('*')).data || [] : []
+          supabase ? (await supabase.from('products').select('*')).data || [] : [],
+          blogRepo.getPosts()
         ]);
 
         // Mapeamento mínimo necessário para o front
@@ -34,8 +38,18 @@ export default function Home() {
           heroImageUrl: p.hero_image_url
         })) as AdminProduct[];
 
+        // Correção de parsing para Safari (Remove microsegundos do timestamp ISO)
+        const parseDateSafe = (dateStr: string) => new Date(dateStr.replace(/\.\d+/, ''));
+        const now = new Date();
+
+        const boostedPosts = (allPosts || []).filter(p => {
+          if (!p.boosted_until) return false;
+          return parseDateSafe(p.boosted_until) > now;
+        }).slice(0, 3);
+
         setConfig(homeConfig);
         setProducts(formattedProducts);
+        setHighlightedPosts(boostedPosts);
       } catch (err) {
         console.error('Error loading home data:', err);
       } finally {
@@ -85,9 +99,17 @@ export default function Home() {
     const target = h.slug || h.id;
     if (isAuthenticated) {
       // Trigger reward silently
-      coinRepo.rewardHighlightWeekly(h.id, 10).then(res => {
-        if (res?.success) refreshBalance();
-      });
+      coinRepo.rewardHighlightWeekly(h.id).then(res => {
+        if (res?.success) {
+          refreshBalance();
+          if (res.awarded) {
+            showToast('Everest Coins!', res.amount, 'coins');
+            if (res.xp_awarded) {
+              setTimeout(() => showToast('XP Ganho!', res.xp_awarded, 'xp'), 1000);
+            }
+          }
+        }
+      }).catch(console.error);
     }
     navigate(`/conteudo/${target}`);
   };
@@ -469,6 +491,102 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Community Featured - Blog Impulsionados */}
+      {highlightedPosts.length > 0 && (
+        <section className="bg-slate-950 py-32 md:py-48 px-4 relative overflow-hidden">
+          {/* Decoração Tech */}
+          <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}></div>
+
+          <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-amber-500/10 blur-[150px] pointer-events-none"></div>
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <header className="mb-20 md:mb-32 flex flex-col items-center text-center space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                <span className="text-amber-500 font-mono text-[9px] uppercase tracking-[0.4em]">Elite Community Publisher</span>
+              </div>
+              <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[0.85] uppercase italic">
+                Vozes em <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600">Destaque.</span>
+              </h2>
+              <p className="max-w-2xl text-slate-400 font-medium text-sm md:text-lg leading-relaxed">
+                As publicações mais relevantes e comentadas pela comunidade. Produzidas e impulsionadas por usuários da rede Elite.
+              </p>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {highlightedPosts.map((post, index) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate(`/blog/${post.id}`)}
+                  className="group cursor-pointer relative bg-[#121A2A] border border-amber-500/20 p-8 rounded-[40px] hover:border-amber-500/60 transition-all duration-500 flex flex-col overflow-hidden shadow-2xl hover:shadow-[0_0_40px_rgba(245,158,11,0.15)]"
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                  <div className="flex items-center justify-between mb-8 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[10px] text-amber-500 font-black uppercase tracking-[0.3em]">Patrocinado</span>
+                    <div className="flex gap-1">
+                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span className="text-white text-xs font-bold">{post.average_rating}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-8">
+                    {post.profile?.avatar_url ? (
+                      <img src={post.profile.avatar_url} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-amber-500/30 object-cover" />
+                    ) : (
+                      <div className="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 font-black text-xl border-2 border-amber-500/30">
+                        {post.profile?.name?.charAt(0) || 'U'}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-white font-bold text-sm">{post.profile?.name || 'Voz Desconhecida'}</p>
+                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mt-1">Autor Top Creator</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-black text-white mb-4 line-clamp-3 leading-tight uppercase italic group-hover:text-amber-400 transition-colors">
+                    {post.title}
+                  </h3>
+
+                  <p className="text-slate-400 text-sm line-clamp-4 leading-relaxed flex-1">
+                    {(post.content || '').replace(/<[^>]+>/g, '')}
+                  </p>
+
+                  <div className="mt-8 pt-6 border-t border-white/5 opacity-50 group-hover:opacity-100 flex items-center justify-between text-xs text-amber-500 font-bold uppercase tracking-wider transition-opacity">
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      Ler Rápido
+                    </span>
+                    <span>→</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <footer className="mt-16 text-center">
+              <button
+                onClick={() => navigate('/blog')}
+                className="text-white hover:text-amber-400 font-black text-xs uppercase tracking-[0.3em] inline-flex items-center gap-3 transition-colors"
+                title="Acessar o Módulo de Blog"
+              >
+                Explorar Todas as Publicações
+                <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+                </div>
+              </button>
+            </footer>
           </div>
         </section>
       )}

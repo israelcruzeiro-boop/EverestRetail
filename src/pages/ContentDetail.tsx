@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { homeContentRepo } from '@/lib/repositories/homeContentRepo';
 import { useAuth } from '@/context/AuthContext';
 import { coinRepo } from '@/lib/repositories/coinRepo';
@@ -11,9 +11,10 @@ import { formatDateBR } from '@/lib/format';
 export default function ContentDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, refreshBalance } = useAuth();
+  const { isAuthenticated, refreshBalance, showToast } = useAuth();
   const [highlight, setHighlight] = useState<WeeklyHighlight | null>(null);
   const [loading, setLoading] = useState(true);
+  const trackedSlug = useRef<string | null>(null);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -23,20 +24,26 @@ export default function ContentDetail() {
       setHighlight(found || null);
       setLoading(false);
 
-      if (found && isAuthenticated) {
+      if (found && isAuthenticated && trackedSlug.current !== slug) {
+        trackedSlug.current = slug || null;
         // Tenta completar a missão de visualização
         coinRepo.completeMission('view_highlight', found.slug || found.id)
-          .then((res: any) => {
-            if (res?.day_complete) {
-              // Deixar o loader global cuidar do modal
-              console.log('Day Complete! Bonus:', res.streak_bonus);
-            }
+          .then((res) => {
             refreshBalance();
+            if (res && res.awarded) {
+              showToast('Everest Coins!', res.amount, 'coins');
+              if (res.xp_awarded) {
+                setTimeout(() => showToast('XP Ganho!', res.xp_awarded, 'xp'), 1000);
+              }
+            }
+          })
+          .catch(() => {
+            trackedSlug.current = null;
           });
       }
     };
     loadContent();
-  }, [slug]);
+  }, [slug, isAuthenticated]);
 
   if (loading) return null;
 

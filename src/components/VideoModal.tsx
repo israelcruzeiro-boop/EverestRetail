@@ -23,11 +23,12 @@ declare global {
 }
 
 export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type = 'mission', sponsorUrl, onComplete }: VideoModalProps) {
-  const { isAuthenticated, refreshBalance } = useAuth();
+  const { isAuthenticated, refreshBalance, updateBalance } = useAuth();
   const playerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
   const [missionCompleted, setMissionCompleted] = useState(false);
+  const [missionResult, setMissionResult] = useState<any>(null);
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [isReady, setIsReady] = useState(false);
   const MIN_WATCH_SECONDS = 30;
@@ -43,6 +44,12 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
 
   useEffect(() => {
     if (!isOpen || !videoId) return;
+
+    // Resetar os estados sempre que o modal for aberto para garantir o funcionamento do próximo vídeo
+    setMissionCompleted(false);
+    setMissionResult(null);
+    setWatchedSeconds(0);
+    isProcessingRef.current = false;
 
     // Carregar API do YouTube se necessário
     if (!window.YT) {
@@ -117,27 +124,40 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
     }
   };
 
+  const isProcessingRef = useRef(false);
+
   const handleComplete = async () => {
-    if (missionCompleted || !isAuthenticated) return;
-    setMissionCompleted(true);
-    stopTracking();
+    if (missionCompleted || isProcessingRef.current || !isAuthenticated) return;
 
-    let result = null;
-    const currentTime = playerRef.current?.getCurrentTime() || 0;
+    try {
+      isProcessingRef.current = true;
+      let result = null;
+      const currentTime = playerRef.current?.getCurrentTime() || 0;
 
-    if (type === 'sponsored') {
-      console.log(`[Moedas] Requisitando patrocinado para ${id}...`);
-      const newBalance = await sponsoredVideosRepo.completeVideo(id, Math.floor(currentTime));
-      result = { success: !!newBalance, balance: newBalance };
-    } else {
-      console.log(`[Moedas] Requisitando watch_videocast para ${id}...`);
-      result = await coinRepo.rewardVideocast(id);
-    }
+      if (type === 'sponsored') {
+        const res = await sponsoredVideosRepo.completeVideo(id, Math.floor(currentTime));
+        if (res && res.awarded) {
+          result = res;
+        }
+      } else {
+        result = await coinRepo.rewardVideocast(id);
+      }
 
-    if (result && (result.success || typeof result.balance === 'number' || result > 0)) {
-      await refreshBalance();
-      setMissionCompleted(true);
-      if (onComplete) onComplete(result);
+      if (result && (result.success || result.awarded || typeof result.balance === 'number' || result > 0)) {
+        // Ao invés de um updateBalance silencioso, garantimos um refreshBalance aqui 
+        // para que o AuthContext dispare as notificações de MOEDAS e XP na tela.
+        await refreshBalance();
+
+        setMissionResult(result);
+        setMissionCompleted(true);
+        if (onComplete) onComplete(result);
+      } else {
+        // Se bater no limite diário ou o banco recusar na hora de finalizar
+        isProcessingRef.current = false;
+      }
+    } catch (err) {
+      console.error('Erro ao completar vídeo:', err);
+      isProcessingRef.current = false; // Permitir tentar de novo se falhar
     }
   };
 
@@ -206,7 +226,26 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
                     🪙
                   </motion.div>
                   <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Parabéns!</h3>
-                  <p className="text-blue-100 font-medium mb-8">Sua recompensa já foi creditada em sua conta.</p>
+                  <p className="text-blue-100 font-medium mb-6">Sua recompensa já foi creditada em sua conta.</p>
+
+                  {missionResult && missionResult.amount !== undefined && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="flex items-center gap-4 bg-white/10 px-6 py-3 rounded-2xl border border-white/20 mb-8"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">🪙</span>
+                        <span className="text-xl font-black text-white">+{missionResult.amount} <span className="text-sm text-blue-200">EC</span></span>
+                      </div>
+                      <div className="w-1 h-6 bg-white/20 rounded-full"></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">⚡</span>
+                        <span className="text-xl font-black text-white">+{missionResult.xp_awarded || missionResult.xp_amount || 0} <span className="text-sm text-blue-200">XP</span></span>
+                      </div>
+                    </motion.div>
+                  )}
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     {sponsorUrl && (

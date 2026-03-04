@@ -18,6 +18,7 @@ interface Mission {
 export default function MissionsTab() {
     const [missions, setMissions] = useState<Mission[]>([]);
     const [sponsoredVideos, setSponsoredVideos] = useState<SponsoredVideo[]>([]);
+    const [completionsCount, setCompletionsCount] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
     const [selectedVideo, setSelectedVideo] = useState<SponsoredVideo | null>(null);
     const { balance, refreshBalance, setMissionStreak } = useAuth();
@@ -29,26 +30,54 @@ export default function MissionsTab() {
 
     const loadData = async () => {
         setLoading(true);
-        const [missionsData, videosData, completionsCount] = await Promise.all([
+        const [missionsData, videosData, counts] = await Promise.all([
             coinRepo.getUserMissions(),
             sponsoredVideosRepo.getActiveVideos(),
             sponsoredVideosRepo.getTodayCompletionsCount()
         ]);
 
-        // Só mostrar vídeos que ainda não atingiram o limite diário
-        const availableVideos = (videosData || []).filter(v => {
-            const count = completionsCount[v.id] || 0;
-            const limit = v.daily_limit || 1;
-            return count < limit;
-        });
+        // Lógica de seleção aleatória estável (baseada na data) para mostrar apenas 3 missões
+        const getDailySelection = (allMissions: Mission[]) => {
+            if (allMissions.length <= 3) return allMissions;
 
-        setMissions(missionsData);
-        setSponsoredVideos(availableVideos);
+            // Criar semente numérica a partir da data de hoje (America/Sao_Paulo)
+            const todayStr = new Intl.DateTimeFormat('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric'
+            }).format(new Date());
+
+            let seed = 0;
+            for (let i = 0; i < todayStr.length; i++) {
+                seed += todayStr.charCodeAt(i);
+            }
+
+            // Ordenar de forma determinística usando a semente
+            const shuffled = [...allMissions].sort((a, b) => {
+                const aHash = a.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), seed);
+                const bHash = b.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), seed);
+                return (aHash % 100) - (bHash % 100);
+            });
+
+            return shuffled.slice(0, 3);
+        };
+
+        const dailySelection = getDailySelection(missionsData);
+        setMissions(dailySelection);
+        setSponsoredVideos(videosData || []);
+        setCompletionsCount(counts || {});
         setLoading(false);
     };
 
     const handleVideoComplete = async (res?: any) => {
-        await refreshBalance();
+        // O VideoModal já chama updateBalance se o saldo vier no res
+        // Se não vier, ou se for uma missão normal sem vídeo, o refreshBalance pode ser necessário
+        // mas aqui estamos lidando com o callback do VideoModal
+        if (!res?.balance) {
+            await refreshBalance();
+        }
+
         if (res?.day_complete) {
             setMissionStreak({
                 amount: res.streak_bonus,
@@ -64,7 +93,12 @@ export default function MissionsTab() {
             case 'watch_videocast':
                 navigate('/');
                 break;
+            case 'blog_review':
+            case 'blog_comment':
+                navigate('/blog');
+                break;
             case 'share_solution':
+            case 'watch_sponsored':
                 navigate('/marketplace');
                 break;
             default:
@@ -184,41 +218,65 @@ export default function MissionsTab() {
                         </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {sponsoredVideos.map((video, idx) => (
-                            <motion.div
-                                key={video.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.1 }}
-                                onClick={() => setSelectedVideo(video)}
-                                className="bg-[#0B1220] p-6 rounded-[24px] border border-white/5 hover:border-amber-500/40 cursor-pointer transition-all duration-500 group overflow-hidden relative shadow-2xl shadow-black/5"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        {sponsoredVideos.map((video, idx) => {
+                            const count = completionsCount[video.id] || 0;
+                            const limit = video.daily_limit || 1;
+                            const isCompleted = count >= limit;
 
-                                {/* Animated Glow on Hover */}
-                                <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                            return (
+                                <motion.div
+                                    key={video.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    onClick={() => !isCompleted && setSelectedVideo(video)}
+                                    className={`p-6 rounded-[24px] border transition-all duration-500 group overflow-hidden relative shadow-2xl shadow-black/5 ${isCompleted
+                                        ? 'bg-slate-100 border-slate-200 grayscale opacity-60'
+                                        : 'bg-[#0B1220] border-white/5 hover:border-amber-500/40 cursor-pointer'
+                                        }`}
+                                >
+                                    {!isCompleted && (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    )}
 
-                                <div className="flex flex-col gap-5 relative z-10">
-                                    <div className="flex items-center justify-between">
-                                        <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-xl shrink-0 group-hover:bg-amber-500/20 group-hover:border-amber-500/30 transition-all duration-500">
-                                            <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
+                                    {/* Animated Glow on Hover */}
+                                    {!isCompleted && (
+                                        <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                                    )}
+
+                                    <div className="flex flex-col gap-5 relative z-10">
+                                        <div className="flex items-center justify-between">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 transition-all duration-500 ${isCompleted
+                                                ? 'bg-slate-200 text-slate-400'
+                                                : 'bg-white/5 border border-white/10 text-amber-500 group-hover:bg-amber-500/20 group-hover:border-amber-500/30'
+                                                }`}>
+                                                {isCompleted ? '✓' : (
+                                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className={`${isCompleted ? 'bg-slate-200 border-slate-300' : 'bg-amber-500/10 border border-amber-500/20'} px-2 py-0.5 rounded-md`}>
+                                                <span className={`text-[7px] font-black uppercase tracking-widest ${isCompleted ? 'text-slate-500' : 'text-amber-500'}`}>
+                                                    {isCompleted ? 'Limite Atingido' : `${limit > 1 ? `Disponível ${count}/${limit}` : 'Premium'}`}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
-                                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest">Premium</span>
+                                        <div className="space-y-1">
+                                            <h4 className={`font-black uppercase tracking-tight line-clamp-1 text-sm transition-colors ${isCompleted ? 'text-slate-500' : 'text-white group-hover:text-amber-400'}`}>
+                                                {video.title}
+                                            </h4>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`${isCompleted ? 'opacity-30' : 'text-amber-500'} text-[10px]`}>🪙</span>
+                                                <p className={`${isCompleted ? 'text-slate-400' : 'text-white/40'} text-[9px] font-black uppercase tracking-widest`}>
+                                                    +{video.reward} EC RECOMPENSA
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-white font-black uppercase tracking-tight line-clamp-1 text-sm group-hover:text-amber-400 transition-colors">{video.title}</h4>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-amber-500 text-[10px]">🪙</span>
-                                            <p className="text-white/40 text-[9px] font-black uppercase tracking-widest">+{video.reward} EC RECOMPENSA</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

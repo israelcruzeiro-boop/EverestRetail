@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PostCard from '@/components/blog/PostCard';
 import PostInteraction from '@/components/blog/PostInteraction';
 import Modal from '@/components/admin/Modal';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const formatDate = (dateStr: string) => {
     return new Intl.DateTimeFormat('pt-BR', {
@@ -18,6 +19,10 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function BlogFeed() {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -28,11 +33,17 @@ export default function BlogFeed() {
         const data = await blogRepo.getPosts();
         setPosts(data);
 
-        // Sincronizar o post aberto no modal com os novos dados (nota/votos)
-        if (selectedPost) {
+        // Sincronizar ou abrir post
+        if (id && !selectedPost) {
+            const requested = data.find(p => p.id === id);
+            if (requested) {
+                setSelectedPost(requested);
+            }
+        } else if (selectedPost) {
             const updated = data.find(p => p.id === selectedPost.id);
             if (updated) setSelectedPost(updated);
         }
+
         setLoading(false);
     };
 
@@ -60,12 +71,14 @@ export default function BlogFeed() {
                                 Blog <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500">Everest</span>
                             </h1>
                         </div>
-                        <Link
-                            to="/blog/novo"
-                            className="px-8 py-5 bg-white text-[#0B1220] font-black text-xs uppercase tracking-[0.4em] border-2 border-white shadow-[8px_8px_0px_0px_rgba(29,78,216,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all inline-block"
-                        >
-                            + Novo Insight
-                        </Link>
+                        {isAuthenticated && (
+                            <Link
+                                to="/blog/novo"
+                                className="px-8 py-5 bg-white text-[#0B1220] font-black text-xs uppercase tracking-[0.4em] border-2 border-white shadow-[8px_8px_0px_0px_rgba(29,78,216,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all inline-block"
+                            >
+                                + Novo Insight
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
@@ -99,7 +112,12 @@ export default function BlogFeed() {
             {/* Post Detail Modal */}
             <Modal
                 isOpen={!!selectedPost}
-                onClose={() => setSelectedPost(null)}
+                onClose={() => {
+                    setSelectedPost(null);
+                    if (id) {
+                        navigate('/blog', { replace: true });
+                    }
+                }}
                 title={selectedPost?.title || ''}
                 size="lg"
             >
@@ -132,9 +150,9 @@ export default function BlogFeed() {
                                 {Number(selectedPost.average_rating) > 0 && (
                                     <div className="ml-auto flex flex-col items-end">
                                         <div className={`flex items-center gap-2 border-2 border-[#0B1220] px-4 py-2 shadow-[4px_4px_0px_0px_rgba(11,18,32,1)] ${Number(selectedPost.average_rating) <= 4 ? 'bg-[#FF4D00] text-white' :
-                                                Number(selectedPost.average_rating) <= 7 ? 'bg-[#FFD700] text-[#0B1220]' :
-                                                    Number(selectedPost.average_rating) <= 9 ? 'bg-[#1D4ED8] text-white' :
-                                                        'bg-[#00FF41] text-[#0B1220]'
+                                            Number(selectedPost.average_rating) <= 7 ? 'bg-[#FFD700] text-[#0B1220]' :
+                                                Number(selectedPost.average_rating) <= 9 ? 'bg-[#1D4ED8] text-white' :
+                                                    'bg-[#00FF41] text-[#0B1220]'
                                             }`}>
                                             <span className="text-sm">★</span>
                                             <span className="text-lg font-black">{Number(selectedPost.average_rating).toFixed(1)}</span>

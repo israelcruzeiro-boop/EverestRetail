@@ -113,7 +113,6 @@ export const coinRepo = {
 
             const completedIds = new Set(completions?.map(c => c.mission_id) || []);
 
-            console.log(`[getUserMissions] Data SP: ${getSaoPauloDate()}, Concluídas: ${completedIds.size}`);
 
             // 3. Mapear para o formato da UI
             return (missions || []).map(m => ({

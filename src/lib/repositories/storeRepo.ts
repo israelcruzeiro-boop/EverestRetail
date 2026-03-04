@@ -48,5 +48,25 @@ export const storeRepo = {
                 message: err.message || 'Erro ao processar compra'
             };
         }
+    },
+
+    async saveItem(item: Partial<StoreItem>): Promise<void> {
+        const { error } = await supabase
+            .from('store_items')
+            .upsert({
+                ...item,
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) throw error;
+    },
+
+    async deleteItem(id: string): Promise<void> {
+        const { error } = await supabase
+            .from('store_items')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
     }
 };

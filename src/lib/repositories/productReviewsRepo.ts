@@ -15,7 +15,7 @@ export const productReviewsRepo = {
                 profile_id: user.id,
                 product_id: productId,
                 hired_at: new Date().toISOString()
-            }, { onConflict: 'profile_id, product_id' });
+            }, { onConflict: 'profile_id,product_id' });
 
         if (error) {
             console.error('Erro ao registrar contratação:', error);
@@ -124,7 +124,7 @@ export const productReviewsRepo = {
                 rating,
                 comment,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'profile_id, product_id' });
+            }, { onConflict: 'profile_id,product_id' });
 
         if (error) {
             console.error('Erro ao enviar avaliação:', error);

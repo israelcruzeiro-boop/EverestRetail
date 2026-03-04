@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { blogRepo } from '@/lib/repositories/blogRepo';
 import { BlogPost, PostComment } from '@/types/blog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { coinRepo } from '@/lib/repositories/coinRepo';
+import { useNavigate } from 'react-router-dom';
 
 interface PostInteractionProps {
     post: BlogPost;
@@ -24,6 +27,8 @@ export default function PostInteraction({ post, onUpdate }: PostInteractionProps
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
+    const { isAuthenticated, refreshBalance, showToast } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const load = async () => {
@@ -41,18 +46,41 @@ export default function PostInteraction({ post, onUpdate }: PostInteractionProps
     }, [post.id]);
 
     const handleRatingSubmit = async () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
         if (selectedRating === null || isSubmitting) return;
         setIsSubmitting(true);
         const success = await blogRepo.submitRating(post.id, selectedRating);
         if (success) {
             setRating(selectedRating);
             onUpdate?.();
+
+            // Tentar completar a missão se ativo
+            try {
+                const res = await coinRepo.completeMission('blog_review', post.id);
+                await refreshBalance();
+                if (res && res.awarded) {
+                    showToast('Everest Coins!', res.amount, 'coins');
+                    if (res.xp_awarded) {
+                        setTimeout(() => showToast('XP Ganho!', res.xp_awarded, 'xp'), 1000);
+                    }
+                }
+            } catch (err) {
+                // Silencioso, pois a missão pode já ter sido concluída ou não ser ativada
+                console.log('Missão de blog_review não rendeu moedas ou já concluída:', err);
+            }
         }
         setIsSubmitting(false);
     };
 
     const handleComment = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
         if (!newComment.trim() || isSubmitting) return;
 
         setIsSubmitting(true);
@@ -61,6 +89,21 @@ export default function PostInteraction({ post, onUpdate }: PostInteractionProps
             setNewComment('');
             const updated = await blogRepo.getComments(post.id);
             setComments(updated);
+
+            // Tentar completar a missão se ativo
+            try {
+                const res = await coinRepo.completeMission('blog_comment', post.id);
+                await refreshBalance();
+                if (res && res.awarded) {
+                    showToast('Everest Coins!', res.amount, 'coins');
+                    if (res.xp_awarded) {
+                        setTimeout(() => showToast('XP Ganho!', res.xp_awarded, 'xp'), 1000);
+                    }
+                }
+            } catch (err) {
+                // Silencioso, pois a missão pode já ter sido concluída ou não estar na fila
+                console.log('Missão de blog_comment não rendeu moedas ou já concluída:', err);
+            }
         }
         setIsSubmitting(false);
     };

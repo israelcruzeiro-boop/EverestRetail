@@ -27,6 +27,7 @@ import AdminSettings from '@/pages/admin/Settings';
 import AdminContent from '@/pages/admin/Content';
 import AdminSponsoredVideos from '@/pages/admin/SponsoredVideos';
 import AdminBlog from '@/pages/admin/Blog';
+import AdminStoreManagement from '@/pages/admin/StoreManagement';
 
 // Guards
 import RequireAuth from '@/components/guards/RequireAuth';
@@ -48,12 +49,15 @@ export default function App() {
             <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />
 
+            {/* Public Blog Routes */}
+            <Route path="blog" element={<BlogFeed />} />
+            <Route path="blog/:id" element={<BlogFeed />} />
+
             {/* Protected User Routes */}
             <Route path="painel" element={<RequireAuth><UserPanel /></RequireAuth>} />
             <Route path="checkout/:id" element={<RequireAuth><Checkout /></RequireAuth>} />
             <Route path="schedule/:id" element={<RequireAuth><Schedule /></RequireAuth>} />
             <Route path="request-publication" element={<RequireAuth><RequestPublication /></RequireAuth>} />
-            <Route path="blog" element={<RequireAuth><BlogFeed /></RequireAuth>} />
             <Route path="blog/novo" element={<RequireAuth><CreatePost /></RequireAuth>} />
           </Route>
 
@@ -61,6 +65,7 @@ export default function App() {
           <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="store" element={<AdminStoreManagement />} />
             <Route path="partners" element={<AdminPartners />} />
             <Route path="blog" element={<AdminBlog />} />
             <Route path="users" element={<AdminUsers />} />

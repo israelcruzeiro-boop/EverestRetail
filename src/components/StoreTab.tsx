@@ -59,8 +59,11 @@ export default function StoreTab() {
     };
 
     const initiationPurchase = (item: StoreItem, targetId?: string) => {
-        if (balance < item.price) {
-            alert('Saldo insuficiente para adquirir este item.');
+        const currentBalance = Number(balance) || 0;
+        const itemPrice = Number(item.price) || 0;
+
+        if (currentBalance < itemPrice) {
+            alert(`Saldo insuficiente para adquirir este item. Seu saldo: ${currentBalance} EC | Custo: ${itemPrice} EC`);
             return;
         }
         setConfirmingItem(item);
@@ -187,8 +190,8 @@ export default function StoreTab() {
                                     onClick={() => item.benefit_type === 'boost' ? openBoostSelector(item) : initiationPurchase(item)}
                                     disabled={purchasing !== null}
                                     className={`relative h-16 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all overflow-hidden flex items-center justify-center min-w-[140px] group/btn ${purchasing === item.code
-                                            ? 'bg-white/5 text-white/20 cursor-wait'
-                                            : 'bg-white text-slate-950 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95'
+                                        ? 'bg-white/5 text-white/20 cursor-wait'
+                                        : 'bg-white text-slate-950 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95'
                                         }`}
                                 >
                                     {purchasing === item.code ? (

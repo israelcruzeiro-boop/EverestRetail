@@ -92,20 +92,33 @@ export const blogRepo = {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
 
-        const { error } = await supabase
-            .from('post_ratings')
-            .upsert({
-                post_id: postId,
-                profile_id: user.id,
-                rating
-            }, { onConflict: 'post_id, profile_id' });
+        try {
+            const { data, error } = await supabase
+                .from('post_ratings')
+                .upsert({
+                    post_id: postId,
+                    profile_id: user.id,
+                    rating
+                }, { onConflict: 'post_id,profile_id' })
+                .select('*');
 
-        if (error) {
-            console.error('Error submitting rating:', error);
+            if (error) {
+                console.error('Error submitting rating:', error);
+                alert(`Erro Supabase: ${error.message} \nDetalhes: ${error.details}`);
+                return false;
+            }
+
+            if (!data || data.length === 0) {
+                alert('Erro Silencioso do Banco: O post não salvou a nota. O gatilho de média (update_post_rating) pode estar revertendo a transação.');
+                return false;
+            }
+
+            return true;
+        } catch (err: any) {
+            console.error('Crash no submitRating:', err);
+            alert(`Exception: ${err.message}`);
             return false;
         }
-
-        return true;
     },
 
     async deletePost(postId: string): Promise<boolean> {

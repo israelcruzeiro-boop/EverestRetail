@@ -37,11 +37,12 @@ CREATE OR REPLACE FUNCTION public.sync_user_balances()
 RETURNS TRIGGER AS $$
 BEGIN
     -- Sincronizar com user_progress
-    INSERT INTO public.user_progress (profile_id, coins_balance, total_coins_earned)
-    VALUES (NEW.id, NEW.coins_balance, NEW.coins_earned_total)
+    INSERT INTO public.user_progress (profile_id, coins_balance, total_coins_earned, xp_total)
+    VALUES (NEW.id, NEW.coins_balance, NEW.coins_earned_total, NEW.xp_total)
     ON CONFLICT (profile_id) DO UPDATE SET
         coins_balance = NEW.coins_balance,
         total_coins_earned = NEW.coins_earned_total,
+        xp_total = NEW.xp_total,
         updated_at = now();
 
     -- Sincronizar com wallets
@@ -57,7 +58,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS trigger_sync_user_balances ON public.profiles;
 CREATE TRIGGER trigger_sync_user_balances
-    AFTER UPDATE OF coins_balance, coins_earned_total ON public.profiles
+    AFTER UPDATE OF coins_balance, coins_earned_total, xp_total, current_level ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.sync_user_balances();
 
 -- 4. RPC UNIFICADA: add_coins_reward

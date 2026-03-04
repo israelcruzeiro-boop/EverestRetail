@@ -12,7 +12,7 @@ import { formatBRLFromCents } from '@/lib/format';
 import { isValidImageFile } from '@/lib/image';
 import { storageUploadRepo } from '@/lib/repositories/storageUploadRepo';
 
-type TabType = 'basic' | 'price' | 'images' | 'benefits' | 'testimonial' | 'ctas';
+type TabType = 'basic' | 'price' | 'images' | 'features' | 'benefits' | 'testimonial' | 'ctas';
 
 export default function Products() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -39,6 +39,9 @@ export default function Products() {
     heroImageUrl: '',
     logoImageUrl: '',
     videoUrl: '',
+    features: [
+      { id: Math.random().toString(36).substr(2, 9), title: '', description: '' }
+    ],
     benefits: [
       { id: Math.random().toString(36).substr(2, 9), text: '' }
     ],
@@ -48,11 +51,11 @@ export default function Products() {
       quote: '',
       authorName: '',
       authorRole: '',
-      authorAvatarUrl: ''
+      company: ''
     },
     gallery: [],
-    ctaLabel: 'SABER MAIS',
-    ctaLink: ''
+    ctaPrimaryLabel: 'SABER MAIS',
+    ctaSecondaryLabel: ''
   });
 
   // Refs para Uploads
@@ -90,6 +93,9 @@ export default function Products() {
         heroImageUrl: '',
         logoImageUrl: '',
         videoUrl: '',
+        features: [
+          { id: Math.random().toString(36).substr(2, 9), title: '', description: '' }
+        ],
         benefits: [
           { id: Math.random().toString(36).substr(2, 9), text: '' }
         ],
@@ -126,6 +132,27 @@ export default function Products() {
     } catch (err: any) {
       alert(err.message || 'Erro ao carregar imagem.');
     }
+  };
+
+  const handleAddFeature = () => {
+    setFormData(prev => ({
+      ...prev,
+      features: [...(prev.features || []), { id: Math.random().toString(36).substr(2, 9), title: '', description: '' }]
+    }));
+  };
+
+  const handleRemoveFeature = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      features: (prev.features || []).filter(f => f.id !== id)
+    }));
+  };
+
+  const handleFeatureChange = (id: string, field: 'title' | 'description', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      features: (prev.features || []).map(f => f.id === id ? { ...f, [field]: value } : f)
+    }));
   };
 
   const handleAddBenefit = () => {
@@ -274,6 +301,7 @@ export default function Products() {
     { id: 'basic', label: 'Básico' },
     { id: 'price', label: 'Preço' },
     { id: 'images', label: 'Imagens' },
+    { id: 'features', label: 'Características' },
     { id: 'benefits', label: 'Benefícios' },
     { id: 'testimonial', label: 'Depoimento' },
     { id: 'ctas', label: 'CTAs' },
@@ -560,6 +588,40 @@ export default function Products() {
               </div>
             )}
 
+            {activeTab === 'features' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4 border-l-4 border-[#1D4ED8] pl-4 py-2">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0B1220]">Características Técnicas</h4>
+                  <button onClick={handleAddFeature} className="text-[9px] font-black uppercase tracking-widest text-[#1D4ED8] hover:underline">+ ADICIONAR ITEM</button>
+                </div>
+                <div className="space-y-6">
+                  {formData.features?.map((feature, index) => (
+                    <div key={feature.id} className="flex gap-4 p-4 bg-slate-50 border-2 border-slate-200">
+                      <div className="flex-1 space-y-4">
+                        <Input
+                          value={feature.title}
+                          onChange={(e) => handleFeatureChange(feature.id, 'title', e.target.value)}
+                          placeholder={`NOME DA CARACTERÍSTICA #${index + 1}`}
+                        />
+                        <Textarea
+                          value={feature.description || ''}
+                          onChange={(e) => handleFeatureChange(feature.id, 'description', e.target.value)}
+                          placeholder="EXPLICAR DETALHE (OPCIONAL)"
+                          rows={2}
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleRemoveFeature(feature.id)}
+                        className="w-14 h-11 bg-[#FF4D00] text-white border-2 border-[#0B1220] font-black hover:bg-[#0B1220] transition-colors self-start flex items-center justify-center shrink-0"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeTab === 'benefits' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4 border-l-4 border-[#00FF41] pl-4 py-2">
@@ -641,6 +703,13 @@ export default function Products() {
                         />
                       </FormField>
                     </div>
+                    <FormField label="Empresa">
+                      <Input
+                        value={formData.testimonial.company}
+                        onChange={(e) => setFormData({ ...formData, testimonial: { ...formData.testimonial!, company: e.target.value } })}
+                        placeholder="EX: TECH SOLUTIONS"
+                      />
+                    </FormField>
                   </div>
                 )}
               </div>

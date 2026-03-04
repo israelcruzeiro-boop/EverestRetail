@@ -5,7 +5,7 @@ import DailyBonusModal from './DailyBonusModal';
 import { supabase } from '@/lib/supabase';
 
 export default function DailyBonusLoader() {
-    const { isAuthenticated, loading, refreshBalance } = useAuth();
+    const { isAuthenticated, loading, refreshBalance, updateBalance } = useAuth();
     const [bonusData, setBonusData] = useState<DailyBonusResult | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -31,7 +31,6 @@ export default function DailyBonusLoader() {
                 if (supabase) {
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) {
-                        console.log('[DailyBonus] Sessão inválida, ignorando.');
                         hasCheckedRef.current = true;
                         isClaimingRef.current = false;
                         return;
@@ -39,14 +38,17 @@ export default function DailyBonusLoader() {
                 }
 
                 const result = await userProgressRepo.claimDailyBonus();
-                console.log('[DailyBonus] Resultado:', result);
 
                 if (result && result.awarded) {
                     setBonusData(result);
                     setIsModalOpen(true);
-                    await refreshBalance();
-                } else {
-                    console.log('[DailyBonus] Não premiado:', result?.message);
+
+                    // Atualização instantânea: usar o saldo retornado pela RPC
+                    if (result.balance !== undefined) {
+                        updateBalance(result.balance);
+                    } else {
+                        await refreshBalance();
+                    }
                 }
             } catch (err) {
                 console.error('[DailyBonus] Erro:', err);

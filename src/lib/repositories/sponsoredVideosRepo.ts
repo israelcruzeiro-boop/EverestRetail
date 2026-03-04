@@ -116,7 +116,7 @@ export const sponsoredVideosRepo = {
      * @param videoId ID do vídeo assistido
      * @param watchedSeconds Segundos assistidos
      */
-    async completeVideo(videoId: string, watchedSeconds: number): Promise<number | null> {
+    async completeVideo(videoId: string, watchedSeconds: number): Promise<any | null> {
         try {
             const { data, error } = await supabase.rpc('complete_sponsored_video', {
                 p_video_id: videoId,
@@ -128,7 +128,7 @@ export const sponsoredVideosRepo = {
                 return null;
             }
 
-            return data?.balance ?? null; // Retorna o saldo extraído do JSONB record
+            return data; // Retorna o objeto JSONB completo (success, awarded, amount, xp_awarded, balance)
         } catch (err) {
             console.error('Erro inesperado ao completar vídeo:', err);
             return null;
@@ -180,7 +180,6 @@ export const sponsoredVideosRepo = {
             }
 
             const completedSet = new Set((data || []).map(v => v.video_id));
-            console.log(`[getTodayCompletedIds] Data SP: ${getSaoPauloDate()}, Concluídos: ${completedSet.size}`);
 
             return completedSet;
         } catch (err: any) {

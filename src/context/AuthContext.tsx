@@ -10,6 +10,7 @@ interface ToastData {
   id: string;
   message: string;
   amount: number;
+  type: 'coins' | 'xp';
 }
 
 interface AuthContextType {
@@ -22,7 +23,8 @@ interface AuthContextType {
   loading: boolean;
   balance: number;
   refreshBalance: () => Promise<void>;
-  showToast: (message: string, amount: number) => void;
+  updateBalance: (newBalance: number) => void;
+  showToast: (message: string, amount: number, type?: 'coins' | 'xp') => void;
   missionStreak: { amount: number; streak: number } | null;
   setMissionStreak: (data: { amount: number; streak: number } | null) => void;
 }
@@ -30,20 +32,25 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Helper: constrói AdminUser a partir dos metadados JWT (nunca falha)
-const buildFromMetadata = (userId: string, metadata: any): AdminUser => ({
-  id: userId,
-  name: metadata?.name || 'Usuário',
-  email: metadata?.email || '',
-  avatarUrl: metadata?.avatar_url || null,
-  role: (metadata?.role as UserRole) || 'viewer',
-  userType: (metadata?.user_type || (metadata?.role === 'admin' ? 'admin' : 'user')) as 'admin' | 'user',
-  coinsBalance: metadata?.coins_balance || 0,
-  coinsEarnedTotal: metadata?.coins_earned_total || 0,
-  currentLevel: metadata?.current_level || 1,
-  xpTotal: metadata?.xp_total || 0,
-  status: 'active',
-  createdAt: new Date().toISOString()
-});
+const buildFromMetadata = (userId: string, metadata: any): AdminUser => {
+  const role = (metadata?.role as UserRole) || 'viewer';
+  const userType = (metadata?.user_type || (role === 'admin' ? 'admin' : 'user')) as 'admin' | 'user';
+
+  return {
+    id: userId,
+    name: metadata?.name || 'Usuário',
+    email: metadata?.email || '',
+    avatarUrl: metadata?.avatar_url || null,
+    role: role,
+    userType: userType,
+    coinsBalance: metadata?.coins_balance || 0,
+    coinsEarnedTotal: metadata?.coins_earned_total || 0,
+    currentLevel: metadata?.current_level || 1,
+    xpTotal: metadata?.xp_total || 0,
+    status: 'active',
+    createdAt: new Date().toISOString()
+  };
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
@@ -53,38 +60,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [missionStreak, setMissionStreak] = useState<{ amount: number; streak: number } | null>(null);
 
   const prevBalanceRef = useRef(0);
+  const prevXpRef = useRef(0);
+  const isInitializedRef = useRef(false);
+  const isLoadingBalanceRef = useRef(false);
 
-  const showToast = (message: string, amount: number) => {
+  const showToast = (message: string, amount: number, type: 'coins' | 'xp' = 'coins') => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts(prev => [...prev, { id, message, amount }]);
+    setToasts(prev => [...prev, { id, message, amount, type }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   };
 
   const refreshBalance = async () => {
-    if (supabase) {
+    if (!supabase || isLoadingBalanceRef.current) return;
+
+    try {
+      isLoadingBalanceRef.current = true;
       const data = await coinRepo.getUserCoinData();
       if (data) {
-        // Detectar ganho de moedas para disparar toast automático
-        const hasCoinGain = data.balance > prevBalanceRef.current && prevBalanceRef.current !== 0;
-        const hasXpGain = data.xpTotal > (user?.xpTotal || 0) && (user?.xpTotal || 0) !== 0;
-
-        if (hasCoinGain) {
-          const diff = data.balance - prevBalanceRef.current;
-          showToast('Everest Coins!', diff);
-        }
-
-        if (hasXpGain) {
-          const diffXp = data.xpTotal - (user?.xpTotal || 0);
-          // Pequeno delay para não sobrepor o toast de moedas se ambos ocorrerem
-          setTimeout(() => {
-            showToast('XP Ganho!', diffXp);
-          }, hasCoinGain ? 1000 : 0);
-        }
-
         setBalance(data.balance);
         prevBalanceRef.current = data.balance;
+        prevXpRef.current = data.xpTotal;
+        isInitializedRef.current = true;
 
         // Atualizar também no estado do usuário para consistência real-time
         const updatedUser = user ? {
@@ -102,6 +100,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('ENT_AUTH_USER', JSON.stringify(updatedUser));
         }
       }
+    } finally {
+      isLoadingBalanceRef.current = false;
+    }
+  };
+
+  const updateBalance = (newBalance: number) => {
+    setBalance(newBalance);
+    prevBalanceRef.current = newBalance;
+
+    if (user) {
+      const updatedUser = {
+        ...user,
+        coinsBalance: newBalance
+      };
+      setUser(updatedUser);
+      localStorage.setItem('ENT_AUTH_USER', JSON.stringify(updatedUser));
     }
   };
 
@@ -140,10 +154,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       // Setar balance imediato do user para evitar flash
       const immediateBalance = user.coinsBalance || 0;
-      if (prevBalanceRef.current === 0) {
-        prevBalanceRef.current = immediateBalance;
-      }
+      const immediateXp = user.xpTotal || 0;
+
       setBalance(immediateBalance);
+
+      // Se estamos trocando de usuário, resetamos a inicialização para evitar diffs do user anterior
+      if (prevBalanceRef.current !== immediateBalance || prevXpRef.current !== immediateXp) {
+        prevBalanceRef.current = immediateBalance;
+        prevXpRef.current = immediateXp;
+        isInitializedRef.current = true;
+      }
     }
   }, [user?.id]);
 
@@ -195,9 +215,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (profile) {
               setUser(profile);
               localStorage.setItem('ENT_AUTH_USER', JSON.stringify(profile));
-              // Setar balance explicitamente
+              // Setar balance imediato
               setBalance(profile.coinsBalance || 0);
               prevBalanceRef.current = profile.coinsBalance || 0;
+              prevXpRef.current = profile.xpTotal || 0;
+              isInitializedRef.current = true;
             }
           }
         } else if (event === 'SIGNED_OUT') {
@@ -297,10 +319,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = !!user;
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.userType === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, signup, logout, loading, balance, refreshBalance, showToast, missionStreak, setMissionStreak }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isAdmin, login, signup, logout, loading, balance, refreshBalance, updateBalance, showToast, missionStreak, setMissionStreak }}>
       {children}
       <div className="fixed bottom-8 right-8 z-[999] flex flex-col gap-4">
         <AnimatePresence>
