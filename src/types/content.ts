@@ -42,6 +42,7 @@ export interface VideoCast {
   thumbnailUrl: string;
   videoUrl: string;
   speakerLabel?: string;
+  isHighlight?: boolean;
   status: 'active' | 'inactive';
   order: number;
 }

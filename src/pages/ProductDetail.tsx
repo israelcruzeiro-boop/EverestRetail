@@ -113,300 +113,177 @@ export default function ProductDetail() {
   if (!product) return <div className="p-20 text-center font-black uppercase text-2xl">[ Produto Não Encontrado ]</div>;
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden font-sans selection:bg-cyan-500/30">
-      {/* Black Header Section - Unified with Branding */}
-      {/* Black Header Section - Unified with Branding */}
-      <div className="bg-black pt-4 pb-4 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/5 shadow-2xl">
-        {/* Subtle Background Art */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[100px]"></div>
-        </div>
+    <div className="min-h-screen bg-[#f5f5f5] font-sans selection:bg-blue-500/30 text-slate-900" aria-label={product.name}>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-4 text-cyan-500/60 text-[10px] font-black uppercase tracking-[0.4em]">
-                <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse"></span>
-                Curadoria ENT / {product.category}
-                {product.averageRating !== undefined && product.averageRating > 0 && (
-                  <>
-                    <span className="text-white/20">|</span>
-                    <span className="text-amber-400 text-[11px]">★ {product.averageRating}</span>
-                  </>
-                )}
-              </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
-                {product.name}
-              </h1>
+      {/* Compact Top Header */}
+      <div className="bg-black py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/5 shadow-xl">
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3 text-blue-500/80 text-[10px] font-black uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+              {product.category}
+              {product.averageRating !== undefined && product.averageRating > 0 && (
+                <>
+                  <span className="text-white/20">|</span>
+                  <span className="text-amber-400">★ {product.averageRating}</span>
+                </>
+              )}
             </div>
-
-            <motion.button
-              whileHover={{ x: -4 }}
-              onClick={() => navigate(-1)}
-              className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-cyan-400 transition-all flex items-center gap-2 group bg-white/5 px-4 py-2 rounded-full border border-white/5"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
-              </svg>
-              Voltar ao Marketplace
-            </motion.button>
+            <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tight">
+              {product.name}
+            </h1>
           </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-xl text-slate-400 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 hover:border-blue-500/50 hover:text-blue-400 transition-all font-black text-[9px] uppercase tracking-widest group shrink-0 self-start md:self-center"
+          >
+            <ArrowLeftIcon className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+            Voltar
+          </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-          {/* Main Content Area */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-7 space-y-12"
-          >
-            <div className="bg-slate-50 border border-slate-100 p-2 rounded-[48px] shadow-sm">
-              <div className="aspect-video overflow-hidden rounded-[44px] border border-white shadow-inner bg-white relative">
+          {/* Left Column: Visuals & Gallery */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white border border-slate-200 p-2 rounded-2xl shadow-sm overflow-hidden">
+              <div className="aspect-video relative bg-slate-100 rounded-xl overflow-hidden group">
                 {product.videoUrl && activeMedia === 'video' ? (
-                  <div className="w-full h-full bg-black relative">
+                  <div className="w-full h-full bg-black">
                     {product.videoUrl.includes('youtube.com') || product.videoUrl.includes('youtu.be') ? (
                       <iframe
                         src={`https://www.youtube.com/embed/${product.videoUrl.split('v=')[1]?.split('&')[0] || product.videoUrl.split('/').pop()}?autoplay=${isPlaying ? 1 : 0}&mute=0&controls=1&loop=1&playlist=${product.videoUrl.split('v=')[1]?.split('&')[0] || product.videoUrl.split('/').pop()}`}
                         className="w-full h-full border-0"
                         allow="autoplay; encrypted-media"
                         allowFullScreen
-                        onLoad={() => isPlaying && setIsPlaying(true)}
                       ></iframe>
                     ) : (
-                      <video
-                        src={product.videoUrl}
-                        autoPlay={isPlaying}
-                        controls
-                        className="w-full h-full object-cover"
-                        onPlay={() => setIsPlaying(true)}
-                      />
-                    )}
-
-                    {!isPlaying && (
-                      <div
-                        className="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer group/play z-30"
-                        onClick={() => setIsPlaying(true)}
-                      >
-                        <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover/play:scale-110 transition-transform shadow-2xl">
-                          <svg className="w-12 h-12 text-white fill-current translate-x-1" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </div>
-                      </div>
+                      <video src={product.videoUrl} autoPlay={isPlaying} controls className="w-full h-full object-cover" />
                     )}
                   </div>
-                ) : product.heroImageUrl ? (
-                  <img src={product.heroImageUrl} alt={product.name} className="w-full h-full object-cover transition-all duration-1000" />
                 ) : (
-                  <div className="aspect-video flex items-center justify-center bg-slate-50 text-[120px]">📦</div>
+                  <img src={product.heroImageUrl || product.logoImageUrl} alt={product.name} className="w-full h-full object-cover" />
                 )}
 
-                {/* Media Indicator Tabs */}
+                {/* Media Toggle */}
                 {product.videoUrl && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                    <div className={`h-1 w-8 rounded-full transition-all duration-500 ${activeMedia === 'image' ? 'bg-cyan-500 w-12' : 'bg-white/30'}`}></div>
-                    <div className={`h-1 w-8 rounded-full transition-all duration-500 ${activeMedia === 'video' ? 'bg-cyan-500 w-12' : 'bg-white/30'}`}></div>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <button
+                      onClick={() => setActiveMedia('image')}
+                      className={`w-2 h-2 rounded-full transition-all ${activeMedia === 'image' ? 'bg-blue-500 w-6' : 'bg-white/50'}`}
+                    />
+                    <button
+                      onClick={() => setActiveMedia('video')}
+                      className={`w-2 h-2 rounded-full transition-all ${activeMedia === 'video' ? 'bg-blue-500 w-6' : 'bg-white/50'}`}
+                    />
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="px-10 md:px-16 space-y-8">
-              <p className="text-2xl md:text-3xl font-medium text-slate-600 leading-tight tracking-tight">
+            {/* Description Card */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Sobre a Solução</h3>
+              <p className="text-slate-600 leading-relaxed font-medium">
                 {product.shortDescription}
               </p>
-              <div className="h-1.5 w-24 bg-gradient-to-r from-blue-600 to-sky-400 rounded-full"></div>
-              <p className="text-lg text-slate-500 leading-relaxed font-medium">
-                Esta solução foi submetida a um rigoroso processo de validação técnica e estratégica pelo ecossistema ENT, garantindo interoperabilidade e alta performance para varejistas de alto volume.
+              <div className="h-1 w-16 bg-blue-600 rounded-full"></div>
+              <p className="text-sm text-slate-500 font-medium">
+                Submetida a validação técnica ENT para garantir performance e escalabilidade.
               </p>
-
-              {/* Reviews Section */}
-              <div className="pt-20 space-y-12">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-8">
-                  <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Avaliações da Comunidade</h3>
-                  {hasHired && !isReviewing && !hasReviewed && (
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      onClick={() => setIsReviewing(true)}
-                      className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-6 py-3 rounded-full border border-blue-100"
-                    >
-                      Avaliar Solução
-                    </motion.button>
-                  )}
-                  {hasReviewed && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 italic">
-                      Você já avaliou esta solução
-                    </span>
-                  )}
-                </div>
-
-                {isReviewing && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="p-10 bg-slate-50 rounded-[40px] border border-blue-100 space-y-8"
-                  >
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nota Final (0 a 10)</label>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                          <button
-                            key={n}
-                            onClick={() => setRating(n)}
-                            className={`w-10 h-10 rounded-xl font-black text-sm transition-all ${rating === n ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-400 hover:bg-slate-100'}`}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Seu feedback estratégico</label>
-                      <textarea
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        placeholder="Descreva sua experiência com a solução..."
-                        className="w-full bg-white border border-slate-200 rounded-3xl p-6 text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none min-h-[120px]"
-                      />
-                    </div>
-                    <div className="flex gap-4">
-                      <button
-                        onClick={handleSubmitReview}
-                        disabled={isSubmittingReview}
-                        className="bg-blue-600 text-white font-black px-10 py-5 rounded-2xl text-[11px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50"
-                      >
-                        {isSubmittingReview ? 'Enviando...' : 'Publicar Avaliação'}
-                      </button>
-                      <button
-                        onClick={() => setIsReviewing(false)}
-                        className="text-slate-400 font-black px-6 py-5 text-[11px] uppercase tracking-widest hover:text-slate-600"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-
-                <div className="space-y-8">
-                  {reviews.length > 0 ? (
-                    reviews.map((review) => (
-                      <div key={review.id} className="p-8 bg-white border border-slate-100 rounded-[32px] shadow-sm space-y-4 group hover:border-blue-100 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl overflow-hidden border border-slate-100">
-                              {review.profile?.avatar_url ? (
-                                <img src={review.profile.avatar_url} className="w-full h-full object-cover" />
-                              ) : (
-                                "👤"
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{review.profile?.name || 'Membro ENT'}</p>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Sócio Estratégico</p>
-                            </div>
-                          </div>
-                          <div className="px-4 py-2 bg-amber-400/10 border border-amber-400/20 rounded-xl flex items-center gap-2">
-                            <span className="text-amber-500 text-sm">★</span>
-                            <span className="text-amber-600 font-black text-lg">{review.rating}</span>
-                          </div>
-                        </div>
-                        <p className="text-slate-500 text-sm font-medium leading-relaxed italic">
-                          "{review.comment || 'Solução excepcional aplicada ao ecossistema varejista.'}"
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-[48px]">
-                      <p className="text-slate-300 font-black uppercase tracking-[0.4em] italic text-xs">Aguardando primeiras avaliações técnicas</p>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
-          </motion.div>
 
-          {/* Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5 pt-4"
-          >
-            <div className="sticky top-20 bg-white/60 backdrop-blur-3xl border border-white p-6 md:p-8 rounded-[48px] shadow-2xl shadow-blue-500/10 space-y-8">
-              <div className="space-y-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600/60">Investimento Estimado</span>
-                <div className="flex flex-col">
-                  {product.originalPriceCents && product.originalPriceCents > product.priceCents && (
-                    <span className="text-sm font-bold text-red-500 line-through mb-1">
-                      De: {formatBRLFromCents(product.originalPriceCents)}
-                    </span>
-                  )}
-                  <span className={`text-4xl md:text-6xl font-black tracking-tighter ${product.originalPriceCents ? 'text-green-600' : 'text-slate-900'}`}>
-                    {product.originalPriceCents ? 'Por: ' : ''}{formatBRLFromCents(product.priceCents)}
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4 bg-slate-50 w-fit px-4 py-1.5 rounded-full border border-slate-100">
-                    Modalidade {product.billingPeriod === 'yearly' ? 'Anual' : 'Mensal'}
-                  </span>
-                </div>
+            {/* Reviews Section */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Avaliações</h3>
+                {hasHired && !isReviewing && !hasReviewed && (
+                  <button onClick={() => setIsReviewing(true)} className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-4 py-2 rounded-full border border-blue-100">Avaliar</button>
+                )}
               </div>
 
-              {((product.features && product.features.length > 0) || (product.benefits && product.benefits.length > 0)) && (
-                <div className="space-y-6 pt-10 border-t border-slate-100">
-                  {/* Priorizar Features, se não tiver, mostrar Benefits */}
-                  {product.features && product.features.length > 0 ? (
-                    product.features.map(feature => (
-                      <div key={feature.id} className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
-                        <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-lg shadow-blue-500/20">✓</div>
-                        <div className="pt-1">
-                          <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight">{feature.title}</p>
-                          {feature.description && (
-                            <p className="text-[9px] uppercase font-bold text-slate-400 mt-1 tracking-widest">{feature.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    product.benefits.map(benefit => (
-                      <div key={benefit.id} className="flex items-start gap-4 p-4 rounded-3xl hover:bg-white/40 transition-colors">
-                        <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-lg shadow-blue-500/20">✓</div>
-                        <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase tracking-tight pt-1.5">{benefit.text}</p>
-                      </div>
-                    ))
-                  )}
+              {isReviewing && (
+                <div className="p-6 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                      <button key={n} onClick={() => setRating(n)} className={`w-8 h-8 rounded-lg text-xs font-bold ${rating === n ? 'bg-blue-600 text-white' : 'bg-white text-slate-400'}`}>{n}</button>
+                    ))}
+                  </div>
+                  <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="Seu feedback..." className="w-full p-4 text-sm border border-slate-200 rounded-xl outline-none focus:ring-1 focus:ring-blue-500" />
+                  <div className="flex gap-2">
+                    <button onClick={handleSubmitReview} className="bg-blue-600 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest">Enviar</button>
+                    <button onClick={() => setIsReviewing(false)} className="text-slate-400 px-4 py-2 text-xs font-bold uppercase tracking-widest">Cancelar</button>
+                  </div>
                 </div>
               )}
 
-              <div className="flex flex-col gap-4 pt-4">
-                <motion.button
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/checkout/${product.id}`)}
-                  className="bg-slate-900 hover:bg-blue-600 text-white font-black py-8 rounded-[32px] text-sm uppercase tracking-[0.4em] transition-all shadow-xl shadow-slate-900/20"
-                >
-                  {product.ctaPrimaryLabel || 'Contratar Agora'}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleShare}
-                  className={`bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-black py-6 rounded-[28px] text-[10px] uppercase tracking-[0.4em] transition-all shadow-sm flex items-center justify-center gap-3 ${isSharing ? 'text-blue-600 border-blue-100' : ''}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.368 3 3 0 000 5.368zm0 10.736a3 3 0 100-5.368 3 3 0 000 5.368z" />
-                  </svg>
-                  {isSharing ? 'Link Copiado!' : 'Compartilhar Solução'}
-                </motion.button>
+              <div className="space-y-4">
+                {reviews.length > 0 ? reviews.map(r => (
+                  <div key={r.id} className="p-4 border border-slate-100 rounded-xl flex items-start gap-4">
+                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-lg">{r.profile?.avatar_url ? <img src={r.profile.avatar_url} className="w-full h-full object-cover" /> : "👤"}</div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">{r.profile?.name || 'Membro ENT'}</span>
+                        <span className="text-blue-600 font-bold text-xs italic">★ {r.rating}</span>
+                      </div>
+                      <p className="text-slate-500 text-xs italic leading-tight">"{r.comment || 'Performance excepcional.'}"</p>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="text-center py-8 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Aguardando avaliações técnicas</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Checkout Sidebar */}
+          <aside className="lg:col-span-5">
+            <div className="sticky top-24 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-6">
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Investimento</span>
+                <div className="flex flex-col">
+                  {product.originalPriceCents && product.originalPriceCents > product.priceCents && (
+                    <span className="text-xs font-bold text-red-500 line-through mb-1">{formatBRLFromCents(product.originalPriceCents)}</span>
+                  )}
+                  <span className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">
+                    {formatBRLFromCents(product.priceCents)}
+                  </span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{product.billingPeriod === 'yearly' ? 'Anual' : 'Mensal'}</span>
+                </div>
               </div>
 
-              <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.6em] text-center pt-8">
-                TERMINAL ENT-PLATFORM v2.25
-              </p>
+              {/* Benefits/Features List */}
+              <div className="space-y-4 pt-6 border-t border-slate-100">
+                {(product.features?.length ? product.features : product.benefits?.slice(0, 4))?.map((item: any) => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-blue-600 rounded-lg flex items-center justify-center text-white text-[10px] shrink-0">✓</div>
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-tight">{item.title || item.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4">
+                <button
+                  onClick={() => navigate(`/checkout/${product.id}`)}
+                  className="bg-slate-900 hover:bg-blue-600 text-white font-black py-5 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg"
+                >
+                  {product.ctaPrimaryLabel || 'Contratar'}
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-black py-4 rounded-xl text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-5.368 3 3 0 000 5.368zm0 10.736a3 3 0 100-5.368 3 3 0 000 5.368z" /></svg>
+                  {isSharing ? 'Link Copiado' : 'Compartilhar'}
+                </button>
+              </div>
+
+              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest text-center pt-4">ENT-PLATFORM v2.25</p>
             </div>
-          </motion.div>
+          </aside>
         </div>
       </div>
     </div>

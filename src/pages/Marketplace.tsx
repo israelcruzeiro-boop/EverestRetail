@@ -9,7 +9,10 @@ import { analytics } from '@/lib/analytics';
 export default function Marketplace() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Todas');
   const [loading, setLoading] = useState(true);
+
+  const categories = ['Todas', 'SaaS', 'Serviço', 'Hardware', 'Destaque', 'Estratégia'];
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -32,77 +35,69 @@ export default function Marketplace() {
     loadProducts();
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchTerm) analytics.track('search', { query: searchTerm });
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = activeCategory === 'Todas' || product.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden font-sans selection:bg-cyan-500/30">
-      {/* Black Market Header Section - Unified with Header */}
-      <div className="bg-black pt-16 md:pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Subtle Background Art */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-cyan-500/5 rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-600/5 rounded-full blur-[80px]"></div>
-        </div>
+    <div className="min-h-screen bg-[#f5f5f5] pb-20 font-sans selection:bg-blue-500/30">
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <header className="bg-white/5 backdrop-blur-3xl border border-white/10 p-10 md:p-14 rounded-[48px] shadow-2xl">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></span>
-              <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Soluções Validadas</span>
-            </div>
+      {/* Compact Top Bar - Search & Sticky Header */}
+      <div className="bg-white py-2 md:py-3 px-4 sticky top-0 md:top-14 z-40 border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto space-y-2.5">
 
-            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight">
-              Everest <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Retail</span>
-            </h1>
-
-            <p className="text-slate-400 mt-6 text-lg font-medium max-w-xl leading-relaxed">
-              A curadoria definitiva de ferramentas e serviços estratégicos para transformar sua operação de varejo.
-            </p>
-          </header>
-        </div>
-      </div>
-
-      {/* Main Content Body - Light Mode */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10 space-y-16">
-        {/* Search Bar - Sophisticated Light */}
-        <div className="flex flex-col md:flex-row gap-6 items-center bg-slate-50 border border-slate-100 p-6 rounded-[32px] shadow-sm">
-          <div className="relative flex-1 w-full">
-            <div className="relative group">
+          {/* Search Header */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 group">
               <input
                 type="text"
-                placeholder="Procurar Solução Estratégica..."
-                className="w-full h-16 pl-8 pr-16 bg-white border border-slate-200 rounded-2xl font-bold text-lg outline-none focus:ring-4 focus:ring-cyan-500/10 focus:border-cyan-300 transition-all placeholder:text-slate-300"
+                placeholder="Buscar soluções..."
+                className="w-full h-9 md:h-10 pl-10 pr-4 bg-slate-100 border border-slate-200 rounded-md text-slate-800 text-[13px] font-medium outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#0f172a] rounded-xl flex items-center justify-center text-white shadow-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
+
+            <button className="w-9 h-9 md:h-10 md:w-10 bg-slate-100 rounded-md flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+            </button>
           </div>
 
-          <div className="hidden md:flex flex-col items-center bg-white px-8 py-3 rounded-2xl border border-slate-200">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5">Total Ativos</span>
-            <span className="text-3xl font-black text-slate-900 leading-none">{filteredProducts.length}</span>
+          {/* Category Chips - Scroll Horizontal */}
+          <div className="flex overflow-x-auto gap-1.5 pb-1 hide-scrollbar -mx-4 px-4">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`flex-shrink-0 px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all border ${activeCategory === cat
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 md:py-4">
+
+        {/* Dense Product Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3">
           {loading ? (
-            Array(6).fill(0).map((_, i) => (
-              <div key={i} className="h-[400px] bg-slate-100 animate-pulse rounded-[32px] border border-slate-200"></div>
+            Array(12).fill(0).map((_, i) => (
+              <div key={i} className="h-64 bg-slate-200 animate-pulse rounded-xl border border-slate-300/50"></div>
             ))
           ) : (
             filteredProducts.map((product) => (
@@ -111,15 +106,8 @@ export default function Marketplace() {
           )}
 
           {!loading && filteredProducts.length === 0 && (
-            <div className="col-span-full py-24 text-center bg-slate-50 rounded-[40px] border-2 border-dashed border-slate-200">
-              <span className="text-5xl block mb-4 grayscale opacity-30">🔍</span>
-              <p className="text-xl font-bold text-slate-400 uppercase tracking-widest">Nenhuma solução encontrada</p>
-              <button
-                onClick={() => setSearchTerm('')}
-                className="mt-6 text-cyan-600 font-bold uppercase text-[10px] tracking-[0.2em] hover:text-slate-900 transition-colors"
-              >
-                [ Limpar Busca ]
-              </button>
+            <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Nenhuma solução encontrada</p>
             </div>
           )}
         </div>

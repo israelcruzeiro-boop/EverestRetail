@@ -18,7 +18,7 @@ const colorMap = {
 
 export default function StatCard({ label, value, trend, icon, color }: StatCardProps) {
   return (
-    <div className="bg-white p-6 border-4 border-[#0B1220] shadow-[8px_8px_0px_0px_rgba(11,18,32,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all group">
+    <div className="bg-white p-6 border-4 border-[#0B1220] shadow-[8px_8px_0px_0px_rgba(11,18,32,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all group" aria-label={label}>
       <div className="flex items-start justify-between mb-8">
         <div className={`w-14 h-14 border-2 flex items-center justify-center ${colorMap[color]}`}>
           <span className="text-2xl grayscale group-hover:grayscale-0 transition-all">{icon}</span>

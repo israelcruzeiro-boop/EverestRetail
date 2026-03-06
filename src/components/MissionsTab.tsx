@@ -111,36 +111,34 @@ export default function MissionsTab() {
     const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" aria-label="Painel de Missões">
             {/* Progress Overview */}
-            <div className="bg-white border border-slate-100 rounded-3xl shadow-sm p-6 md:p-8">
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/20">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></div>
-                            <span className="text-cyan-600 font-mono text-[9px] uppercase tracking-[0.4em]">Missões Diárias</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-blue-50 border border-blue-100">
+                            <span className="text-blue-600 font-bold text-[10px] uppercase tracking-wider">Missões Diárias</span>
                         </div>
-                        <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">
-                            {completedCount} <span className="text-slate-300">/</span> {totalCount} <span className="text-cyan-600 text-lg">Concluídas</span>
+                        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+                            {completedCount} <span className="text-slate-400 font-normal">/</span> {totalCount} <span className="text-slate-500 text-lg font-medium">Concluídas</span>
                         </h3>
                     </div>
-                    <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-4 rounded-2xl">
-                        <span className="text-2xl">🪙</span>
+                    <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 px-5 py-3 rounded-xl">
+                        <span className="text-2xl drop-shadow-sm">🪙</span>
                         <div>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Patrimônio</span>
-                            <span className="text-2xl font-black text-slate-900 tabular-nums tracking-tighter">{balance}</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Saldo Atual</span>
+                            <span className="text-xl font-bold text-slate-900 tabular-nums">{balance}</span>
                         </div>
                     </div>
                 </div>
                 {/* Progress Bar */}
-                <div className="mt-6 h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="mt-6 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
                         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                        className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full relative"
+                        className="h-full bg-blue-500 rounded-full relative"
                     >
-                        {progress > 0 && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-cyan-500 rounded-full shadow-lg"></div>}
                     </motion.div>
                 </div>
             </div>
@@ -156,50 +154,41 @@ export default function MissionsTab() {
                         missions.map((mission, idx) => (
                             <motion.div
                                 key={mission.id}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.08 }}
+                                transition={{ delay: idx * 0.05 }}
                                 onClick={() => !mission.is_completed_today && handleMissionClick(mission.code)}
-                                className={`relative p-6 rounded-2xl border transition-all duration-500 overflow-hidden group ${mission.is_completed_today
-                                    ? 'bg-emerald-50/50 border-emerald-200/60 shadow-sm'
-                                    : 'bg-white border-slate-100 hover:border-cyan-200 hover:shadow-xl hover:shadow-cyan-500/5 cursor-pointer active:scale-[0.98]'
+                                className={`relative p-4 rounded-xl border transition-all duration-300 overflow-hidden group ${mission.is_completed_today
+                                    ? 'bg-emerald-50 border-emerald-100 shadow-sm'
+                                    : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-md cursor-pointer active:scale-[0.99]'
                                     }`}
                             >
-                                {/* Scanline */}
-                                {!mission.is_completed_today && (
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/[0.03] to-transparent -translate-y-full group-hover:translate-y-full transition-transform duration-[2s] pointer-events-none"></div>
-                                )}
-
                                 <div className="flex items-start justify-between relative z-10 gap-4">
                                     <div className="flex items-start gap-4 min-w-0">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg shrink-0 transition-all group-hover:scale-110 ${mission.is_completed_today
-                                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                                            : 'bg-slate-900 text-white shadow-lg shadow-black/10'
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0 transition-all ${mission.is_completed_today
+                                            ? 'bg-emerald-500 text-white'
+                                            : 'bg-blue-50 border border-blue-100 text-blue-600'
                                             }`}>
                                             {mission.is_completed_today ? '✓' : '🎯'}
                                         </div>
-                                        <div className="space-y-2 min-w-0">
-                                            <span className={`text-[8px] font-black uppercase tracking-[0.3em] ${mission.is_completed_today ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                        <div className="space-y-1.5 min-w-0">
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${mission.is_completed_today ? 'text-emerald-600' : 'text-slate-500'}`}>
                                                 {mission.is_completed_today ? 'Completada' : 'Missão Ativa'}
                                             </span>
-                                            <h4 className="text-base font-black text-slate-900 leading-snug group-hover:text-cyan-600 transition-colors uppercase tracking-tight">
+                                            <h4 className="text-sm font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors">
                                                 {mission.description}
                                             </h4>
-                                            <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 w-fit">
-                                                <span className="text-sm">🪙</span>
-                                                <span className="text-[10px] font-black text-slate-700">+{mission.reward} EC</span>
+                                            <div className="flex items-center gap-1.5 pt-1">
+                                                <span className="text-xs">🪙</span>
+                                                <span className="text-xs font-bold text-[#ee4d2d]">+{mission.reward} EC</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {mission.is_completed_today && (
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            className="px-3 py-1.5 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.15em] rounded-lg shadow-lg shadow-emerald-500/20 shrink-0"
-                                        >
+                                        <div className="px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded">
                                             OK
-                                        </motion.div>
+                                        </div>
                                     )}
                                 </div>
                             </motion.div>
@@ -210,14 +199,14 @@ export default function MissionsTab() {
 
             {/* Sponsored Videos Section */}
             {sponsoredVideos.length > 0 && (
-                <div className="space-y-6 pt-4 border-t border-slate-100">
+                <div className="space-y-4 pt-6 border-t border-slate-200">
                     <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-6 bg-amber-500 rounded-full"></div>
-                        <span className="text-amber-600 text-[10px] font-black uppercase tracking-[0.3em] py-1">
-                            Conteúdo Patrocinado
+                        <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
+                        <span className="text-slate-800 text-sm font-bold">
+                            Vídeos Patrocinados
                         </span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {sponsoredVideos.map((video, idx) => {
                             const count = completionsCount[video.id] || 0;
                             const limit = video.daily_limit || 1;
@@ -226,52 +215,38 @@ export default function MissionsTab() {
                             return (
                                 <motion.div
                                     key={video.id}
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.1 }}
+                                    transition={{ delay: idx * 0.05 }}
                                     onClick={() => !isCompleted && setSelectedVideo(video)}
-                                    className={`p-6 rounded-[24px] border transition-all duration-500 group overflow-hidden relative shadow-2xl shadow-black/5 ${isCompleted
-                                        ? 'bg-slate-100 border-slate-200 grayscale opacity-60'
-                                        : 'bg-[#0B1220] border-white/5 hover:border-amber-500/40 cursor-pointer'
+                                    className={`p-4 rounded-xl border transition-all duration-300 group overflow-hidden relative shadow-sm flex flex-col justify-between min-h-[140px] ${isCompleted
+                                        ? 'bg-slate-50 border-slate-200 grayscale opacity-60'
+                                        : 'bg-white border-slate-200 hover:border-orange-500 hover:shadow cursor-pointer active:scale-[0.99]'
                                         }`}
                                 >
-                                    {!isCompleted && (
-                                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    )}
-
-                                    {/* Animated Glow on Hover */}
-                                    {!isCompleted && (
-                                        <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                                    )}
-
-                                    <div className="flex flex-col gap-5 relative z-10">
-                                        <div className="flex items-center justify-between">
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 transition-all duration-500 ${isCompleted
-                                                ? 'bg-slate-200 text-slate-400'
-                                                : 'bg-white/5 border border-white/10 text-amber-500 group-hover:bg-amber-500/20 group-hover:border-amber-500/30'
-                                                }`}>
-                                                {isCompleted ? '✓' : (
-                                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                    </svg>
-                                                )}
-                                            </div>
-                                            <div className={`${isCompleted ? 'bg-slate-200 border-slate-300' : 'bg-amber-500/10 border border-amber-500/20'} px-2 py-0.5 rounded-md`}>
-                                                <span className={`text-[7px] font-black uppercase tracking-widest ${isCompleted ? 'text-slate-500' : 'text-amber-500'}`}>
-                                                    {isCompleted ? 'Limite Atingido' : `${limit > 1 ? `Disponível ${count}/${limit}` : 'Premium'}`}
-                                                </span>
-                                            </div>
+                                    <div className="flex items-start justify-between z-10 mb-2">
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 transition-all ${isCompleted
+                                            ? 'bg-slate-200 text-slate-400'
+                                            : 'bg-orange-50 text-orange-500 group-hover:bg-orange-100'
+                                            }`}>
+                                            {isCompleted ? '✓' : '▶'}
                                         </div>
-                                        <div className="space-y-1">
-                                            <h4 className={`font-black uppercase tracking-tight line-clamp-1 text-sm transition-colors ${isCompleted ? 'text-slate-500' : 'text-white group-hover:text-amber-400'}`}>
-                                                {video.title}
-                                            </h4>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`${isCompleted ? 'opacity-30' : 'text-amber-500'} text-[10px]`}>🪙</span>
-                                                <p className={`${isCompleted ? 'text-slate-400' : 'text-white/40'} text-[9px] font-black uppercase tracking-widest`}>
-                                                    +{video.reward} EC RECOMPENSA
-                                                </p>
-                                            </div>
+                                        <div className={`${isCompleted ? 'bg-slate-200' : 'bg-orange-100'} px-2 py-0.5 rounded`}>
+                                            <span className={`text-[10px] font-bold ${isCompleted ? 'text-slate-500' : 'text-orange-600'}`}>
+                                                {isCompleted ? 'Limite Atingido' : `${limit > 1 ? `Disponível ${count}/${limit}` : 'Prêmio'}`}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1.5 mt-auto relative z-10">
+                                        <h4 className={`font-medium line-clamp-2 text-sm leading-tight transition-colors ${isCompleted ? 'text-slate-500' : 'text-slate-800 group-hover:text-orange-600'}`}>
+                                            {video.title}
+                                        </h4>
+                                        <div className="flex items-center gap-1.5 border-t border-slate-100 pt-2 mt-2">
+                                            <span className={`${isCompleted ? 'opacity-50' : ''} text-xs`}>🪙</span>
+                                            <p className={`${isCompleted ? 'text-slate-400' : 'text-[#ee4d2d]'} text-xs font-bold`}>
+                                                +{video.reward} EC
+                                            </p>
                                         </div>
                                     </div>
                                 </motion.div>

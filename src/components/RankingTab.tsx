@@ -40,27 +40,24 @@ export default function RankingTab() {
     ];
 
     return (
-        <div className="space-y-10">
-            {/* Header + Filters */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                        <span className="text-amber-600 font-mono text-[9px] uppercase tracking-[0.4em]">Elite Board v2.0</span>
-                    </div>
-                    <h4 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900">
-                        Ranking <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-600">Everest</span>
-                    </h4>
+        <div className="space-y-6 text-slate-900">
+            {/* Header + Filters - Clean */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2 border-b border-slate-100 pb-4">
+                <div className="space-y-1">
+                    <h2 className="text-xl font-bold text-slate-900 leading-tight">
+                        Ranking Elite Everest
+                    </h2>
+                    <p className="text-slate-500 font-medium max-w-md text-sm">Os mais engajados da comunidade.</p>
                 </div>
 
-                <div className="flex bg-white p-1 rounded-xl border border-slate-100 shadow-sm">
+                <div className="flex bg-slate-50 p-1 rounded-lg border border-slate-200">
                     {filters.map((f) => (
                         <button
                             key={f.id}
                             onClick={() => setCriteria(f.id)}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${criteria === f.id
-                                ? 'bg-slate-900 text-white shadow-lg shadow-black/10'
-                                : 'text-slate-400 hover:text-slate-900'
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded text-[12px] font-bold transition-all ${criteria === f.id
+                                ? 'bg-white text-[#ee4d2d] shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             <span className="text-sm">{f.icon}</span>
@@ -96,22 +93,19 @@ export default function RankingTab() {
                                     className={`flex flex-col items-center group ${isFirst ? 'order-2' : displayIdx === 0 ? 'order-1' : 'order-3'}`}
                                 >
                                     <div className="relative mb-4 md:mb-6">
-                                        {/* Glow */}
-                                        <div className={`absolute inset-0 ${colors.glow} blur-[40px] opacity-15 group-hover:opacity-30 transition-opacity rounded-full ${isFirst ? 'scale-150' : 'scale-125'}`} />
-
-                                        <div className={`relative ${colors.size} rounded-full border-[3px] ${colors.border} p-0.5 bg-white shadow-xl overflow-hidden transition-transform group-hover:scale-105`}>
+                                        <div className={`relative ${colors.size} rounded-full border-[3px] ${isFirst ? 'border-amber-400' : 'border-slate-300'} p-0.5 bg-white shadow-md overflow-hidden transition-transform group-hover:scale-105`}>
                                             {entry.avatar_url ? (
-                                                <img src={entry.avatar_url} className="w-full h-full object-cover rounded-full" />
+                                                <img src={entry.avatar_url} alt={entry.name} className="w-full h-full object-cover rounded-full" />
                                             ) : (
-                                                <div className={`w-full h-full flex items-center justify-center font-black uppercase bg-slate-50 rounded-full ${isFirst ? 'text-3xl text-cyan-300' : 'text-2xl text-slate-200'}`}>
+                                                <div className={`w-full h-full flex items-center justify-center font-bold uppercase bg-slate-100 rounded-full ${isFirst ? 'text-4xl text-amber-500' : 'text-3xl text-slate-400'}`}>
                                                     {entry.name[0]}
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* Rank Badge */}
-                                        <div className={`absolute -bottom-1 -right-1 w-8 h-8 md:w-10 md:h-10 ${colors.badge} rounded-xl flex items-center justify-center text-white font-black text-xs shadow-xl border-2 border-white`}>
-                                            {isFirst ? '👑' : `${podiumIdx + 1}º`}
+                                        <div className={`absolute -bottom-2 -right-1 w-8 h-8 md:w-10 md:h-10 ${isFirst ? 'bg-[#ee4d2d]' : 'bg-slate-600'} rounded-[8px] flex items-center justify-center text-white font-bold text-sm shadow-md border-2 border-white`}>
+                                            {isFirst ? '1º' : `${podiumIdx + 1}º`}
                                         </div>
                                     </div>
 
@@ -185,7 +179,7 @@ export default function RankingTab() {
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden shrink-0 group-hover:border-cyan-200 transition-colors">
                                                             {entry.avatar_url ? (
-                                                                <img src={entry.avatar_url} className="w-full h-full object-cover rounded-lg" />
+                                                                <img src={entry.avatar_url} alt={entry.name} className="w-full h-full object-cover rounded-lg" />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-slate-300 bg-white uppercase">
                                                                     {entry.name[0]}
@@ -235,11 +229,9 @@ export default function RankingTab() {
                                     })}
 
                                     {!loading && ranking.length > 0 && !ranking.some(r => r.profile_id === user?.id) && (
-                                        <tr className="bg-slate-900">
-                                            <td colSpan={3} className="px-8 py-4 text-center">
-                                                <span className="text-white text-[9px] font-black uppercase tracking-[0.4em] animate-pulse">
-                                                    Inicie missões para entrar no Ranking Elite
-                                                </span>
+                                        <tr className="bg-slate-50">
+                                            <td colSpan={3} className="px-8 py-6 text-center text-slate-500 text-sm font-medium">
+                                                Inicie missões para entrar no ranking.
                                             </td>
                                         </tr>
                                     )}

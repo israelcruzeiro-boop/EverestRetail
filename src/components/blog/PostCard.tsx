@@ -18,11 +18,12 @@ export default function PostCard({ post, onClick }: PostCardProps) {
     return (
         <motion.div
             whileHover={{ y: -4 }}
-            className="group bg-white border-4 border-[#0B1220] overflow-hidden shadow-[8px_8px_0px_0px_rgba(11,18,32,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer"
+            aria-label={post.title}
+            className="group bg-white border-2 border-[#0B1220] overflow-hidden shadow-[8px_8px_0px_0px_rgba(11,18,32,1)] hover:shadow-[4px_4px_0px_0px_rgba(11,18,32,1)] hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer flex flex-col h-full"
             onClick={onClick}
         >
             {post.image_url && (
-                <div className="aspect-[16/9] overflow-hidden border-b-4 border-[#0B1220]">
+                <div className="aspect-[16/9] overflow-hidden border-b-2 border-[#0B1220]">
                     <img
                         src={post.image_url}
                         alt={post.title}
@@ -30,7 +31,7 @@ export default function PostCard({ post, onClick }: PostCardProps) {
                     />
                 </div>
             )}
-            <div className="p-8 space-y-4">
+            <div className="p-5 md:p-6 space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-[#0B1220] overflow-hidden">
                         {post.profile?.avatar_url ? (
@@ -51,9 +52,9 @@ export default function PostCard({ post, onClick }: PostCardProps) {
                     </div>
                     {Number(post.average_rating) > 0 && (
                         <div className={`ml-auto flex items-center gap-1.5 border-2 border-[#0B1220] px-3 py-1 shadow-[2px_2px_0px_0px_rgba(11,18,32,1)] ${Number(post.average_rating) <= 4 ? 'bg-[#FF4D00] text-white' :
-                                Number(post.average_rating) <= 7 ? 'bg-[#FFD700] text-[#0B1220]' :
-                                    Number(post.average_rating) <= 9 ? 'bg-[#1D4ED8] text-white' :
-                                        'bg-[#00FF41] text-[#0B1220]'
+                            Number(post.average_rating) <= 7 ? 'bg-[#FFD700] text-[#0B1220]' :
+                                Number(post.average_rating) <= 9 ? 'bg-[#1D4ED8] text-white' :
+                                    'bg-[#00FF41] text-[#0B1220]'
                             }`}>
                             <span className="text-[10px]">★</span>
                             <span className="text-[10px] font-black">{Number(post.average_rating).toFixed(1)}</span>
@@ -61,7 +62,7 @@ export default function PostCard({ post, onClick }: PostCardProps) {
                     )}
                 </div>
 
-                <h3 className="text-2xl font-black text-[#0B1220] uppercase tracking-tighter leading-none group-hover:text-[#1D4ED8] transition-colors">
+                <h3 className="text-xl font-black text-[#0B1220] uppercase tracking-tighter leading-none group-hover:text-[#1D4ED8] transition-colors">
                     {post.title}
                 </h3>
                 <p className="text-slate-500 text-sm font-medium line-clamp-3 leading-relaxed">

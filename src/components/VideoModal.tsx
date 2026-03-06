@@ -10,7 +10,7 @@ interface VideoModalProps {
   videoUrl: string;
   title: string;
   id: string; // ID da missão/videocast ou do sponsored_video
-  type?: 'mission' | 'sponsored';
+  type?: 'mission' | 'sponsored' | 'videocast';
   sponsorUrl?: string;
   onComplete?: (res?: any) => void;
 }
@@ -28,6 +28,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
   const containerRef = useRef<HTMLDivElement>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
   const [missionCompleted, setMissionCompleted] = useState(false);
+  const [rewardClaimed, setRewardClaimed] = useState(false);
   const [missionResult, setMissionResult] = useState<any>(null);
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [isReady, setIsReady] = useState(false);
@@ -47,6 +48,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
 
     // Resetar os estados sempre que o modal for aberto para garantir o funcionamento do próximo vídeo
     setMissionCompleted(false);
+    setRewardClaimed(false);
     setMissionResult(null);
     setWatchedSeconds(0);
     isProcessingRef.current = false;
@@ -102,7 +104,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
   }, [isOpen, videoId]);
 
   const startTracking = () => {
-    if (progressInterval.current || missionCompleted || !isAuthenticated) return;
+    if (type === 'videocast' || progressInterval.current || missionCompleted || rewardClaimed || !isAuthenticated) return;
 
     progressInterval.current = setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
@@ -127,7 +129,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
   const isProcessingRef = useRef(false);
 
   const handleComplete = async () => {
-    if (missionCompleted || isProcessingRef.current || !isAuthenticated) return;
+    if (missionCompleted || rewardClaimed || isProcessingRef.current || !isAuthenticated) return;
 
     try {
       isProcessingRef.current = true;
@@ -149,7 +151,11 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
         await refreshBalance();
 
         setMissionResult(result);
-        setMissionCompleted(true);
+        if (type === 'videocast') {
+          setRewardClaimed(true);
+        } else {
+          setMissionCompleted(true);
+        }
         if (onComplete) onComplete(result);
       } else {
         // Se bater no limite diário ou o banco recusar na hora de finalizar
@@ -178,7 +184,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="fixed inset-0 flex items-center justify-center p-4 md:p-8 z-[110] pointer-events-none"
           >
-            <div className="w-full max-w-5xl aspect-video bg-black rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl pointer-events-auto relative">
+            <div className="w-full max-w-5xl aspect-video bg-black rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl pointer-events-auto relative" aria-label={title}>
               <button
                 onClick={onClose}
                 className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all z-10"
@@ -192,7 +198,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
               />
 
               {/* Progress Overlay */}
-              {!missionCompleted && (
+              {!missionCompleted && !rewardClaimed && (
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">

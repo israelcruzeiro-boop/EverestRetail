@@ -127,7 +127,7 @@ export default function Dashboard() {
   return (
     <>
       <AdminTopbar title="Painel de Controle" />
-      <div className="p-4 md:p-12 max-w-7xl mx-auto space-y-12 md:space-y-20">
+      <div className="p-4 md:p-12 max-w-7xl mx-auto space-y-12 md:space-y-20" aria-label="Dashboard Administrativo">
         {loading ? (
           <div className="h-64 flex items-center justify-center border-4 border-[#0B1220] bg-white">
             <div className="text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Sincronizando Metrics Center...</div>

@@ -68,188 +68,139 @@ export default function ContentDetail() {
   }
 
   return (
-    <div className="bg-[#0B1220] min-h-screen pb-32 relative overflow-hidden font-sans selection:bg-cyan-500/30 text-slate-300">
-      {/* Background Blobs (Premium Intel Vibe) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 10, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[10%] -left-[10%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[150px]"
-        />
-        <motion.div
-          animate={{ x: [0, -50, 0], y: [0, 50, 0] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[30%] -right-[10%] w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[200px]"
-        />
+    <div className="bg-[#f5f5f5] min-h-screen pb-20 font-sans text-slate-900">
+      {/* Compact Top Header */}
+      <div className="bg-black py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/5 shadow-xl">
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_#3b82f6]"></span>
+              <span className="bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1 uppercase tracking-widest rounded border border-blue-500/20 backdrop-blur-sm">
+                {highlight.tag || 'Destaque'}
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tight italic">
+              {highlight.title}
+            </h1>
+          </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-xl text-slate-400 px-4 py-2 rounded-full border border-white/10 hover:bg-white/10 hover:border-blue-500/50 hover:text-blue-400 transition-all font-black text-[9px] uppercase tracking-widest group shrink-0 self-start md:self-center"
+          >
+            <ArrowLeftIcon className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
+            Voltar
+          </button>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 relative z-10">
-        <motion.button
-          whileHover={{ x: -5 }}
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-xl text-slate-400 px-6 py-3 rounded-full border border-white/10 shadow-lg hover:bg-white/10 hover:border-cyan-500/50 hover:text-cyan-400 transition-all mb-16 group font-black text-[10px] uppercase tracking-[0.3em]"
-        >
-          <ArrowLeftIcon className="w-4 h-4" />
-          Retornar
-        </motion.button>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8">
 
-        <header className="mb-20 text-center md:text-left max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 relative"
-          >
-            {/* Tag Elite */}
-            <div className="flex items-center gap-3 justify-center md:justify-start mb-8">
-              <span className="w-2.5 h-2.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_#06b6d4]"></span>
-              <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-black px-4 py-2 uppercase tracking-[0.4em] rounded-md ring-1 ring-cyan-500/20 backdrop-blur-sm">
-                {highlight.tag || 'Intel Report'}
+          {/* Main Content Article */}
+          <article className="lg:col-span-8 space-y-6">
+            {/* Meta info compact */}
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-900 rounded-lg flex items-center justify-center font-black text-sm text-white">
+                  {highlight.authorName?.split(' ').map(n => n[0]).join('') || 'E'}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">{highlight.authorName || 'Everest Retail'}</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{highlight.readTimeLabel || '5 min leitura'}</span>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hidden sm:block">
+                {formatDateBR(new Date().toISOString())}
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-[90px] font-black text-white leading-[0.9] tracking-tighter uppercase italic">
-              {highlight.title}
-            </h1>
-
-            {highlight.subtitle && (
-              <p className="text-lg md:text-2xl text-slate-400 leading-relaxed font-medium max-w-4xl border-l-2 border-slate-800 pl-6">
-                {highlight.subtitle}
-              </p>
+            {/* Content Cover - Reduced size */}
+            {(highlight.contentCoverUrl || highlight.imageUrl) && (
+              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg aspect-video md:aspect-[21/9]">
+                <img
+                  src={highlight.contentCoverUrl || highlight.imageUrl}
+                  alt={highlight.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             )}
 
-            <div className="pt-10 mt-10 flex flex-col md:flex-row md:items-center gap-6 border-t border-white/5">
-              <div className="flex bg-[#121A2A] p-4 rounded-3xl items-center gap-5 border border-white/5 shadow-inner">
-                <div className="w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-800 rounded-[20px] flex items-center justify-center font-black text-xl text-white shadow-lg shadow-cyan-500/20 border border-white/10">
-                  {highlight.authorName?.split(' ').map(n => n[0]).join('') || 'RE'}
+            {/* Article Content */}
+            <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+              {highlight.body && highlight.body.length > 0 ? (
+                highlight.body.map((block) => {
+                  switch (block.type) {
+                    case 'heading':
+                      return (
+                        <h2 key={block.id} className="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight mt-8 mb-4 uppercase italic border-l-4 border-blue-600 pl-4">
+                          {block.text}
+                        </h2>
+                      );
+                    case 'quote':
+                      return (
+                        <blockquote key={block.id} className="p-6 md:p-8 my-8 bg-slate-50 rounded-xl border-l-4 border-l-blue-600 border border-slate-200 italic shadow-sm">
+                          <p className="text-lg md:text-xl text-slate-700 font-bold leading-tight tracking-tight uppercase">
+                            "{block.text}"
+                          </p>
+                        </blockquote>
+                      );
+                    case 'bullet':
+                      return (
+                        <div key={block.id} className="flex gap-4 items-start group py-1 px-2">
+                          <div className="mt-1.5 flex-shrink-0 w-2 h-2 rounded-full bg-blue-500"></div>
+                          <p className="text-base text-slate-600 leading-relaxed">{block.text}</p>
+                        </div>
+                      );
+                    case 'image':
+                      return (
+                        <figure key={block.id} className="my-8 space-y-2">
+                          <div className="rounded-xl overflow-hidden border border-slate-200 shadow-md">
+                            <img src={block.imageUrl} alt={block.text} className="w-full h-full object-cover" />
+                          </div>
+                          {block.text && (
+                            <figcaption className="text-center text-slate-400 text-[9px] font-bold uppercase tracking-widest mt-2">
+                              {block.text}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
+                    case 'paragraph':
+                    default:
+                      return <p key={block.id} className="text-base md:text-lg text-slate-600 leading-relaxed font-medium mb-4 whitespace-pre-wrap">{block.text}</p>;
+                  }
+                })
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                  <p className="text-xs text-slate-400 font-black uppercase tracking-widest">Sem conteúdo registrado</p>
                 </div>
-                <div className="flex flex-col text-left pr-4">
-                  <span className="text-sm font-black text-white uppercase tracking-widest">{highlight.authorName || 'Redação Everest'}</span>
-                  <span className="text-[9px] text-cyan-500 font-black uppercase tracking-[0.3em] mt-1 flex items-center gap-1.5">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    {highlight.readTimeLabel || '5 min leitura'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="md:ml-auto">
-                <span className="flex items-center gap-2 text-[9px] text-slate-500 font-mono uppercase tracking-[0.2em]">
-                  <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                  Timestamp: {formatDateBR(new Date().toISOString())}
-                </span>
-              </div>
+              )}
             </div>
-          </motion.div>
-        </header>
+          </article>
+
+          {/* Side Banner CTA (Stickier) */}
+          <aside className="lg:col-span-4 space-y-6">
+            <div className="sticky top-24 bg-slate-900 p-8 rounded-2xl border border-white/5 shadow-2xl overflow-hidden relative group">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
+
+              <h4 className="text-2xl font-black mb-4 text-white tracking-tighter leading-none uppercase italic relative z-10">
+                Impulsione sua<br />
+                <span className="text-blue-400">Estratégia</span>
+              </h4>
+              <p className="text-slate-400 text-xs mb-6 font-medium leading-relaxed relative z-10">
+                Integre estas tendências de alta performance diretamente na sua operação.
+              </p>
+
+              <button
+                onClick={() => navigate('/marketplace')}
+                className="w-full relative px-6 py-4 bg-white text-slate-950 rounded-xl font-black text-xs uppercase tracking-widest transition-all hover:bg-blue-500 hover:text-white shadow-lg relative z-10"
+              >
+                Explorar Frameworks
+              </button>
+            </div>
+          </aside>
+        </div>
       </div>
-
-      {/* Hero Image Cinematic */}
-      {(highlight.contentCoverUrl || highlight.imageUrl) && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-7xl mx-auto px-4 mb-24 relative z-10"
-        >
-          {/* Edge Glow */}
-          <div className="absolute inset-4 bg-cyan-500/20 rounded-[56px] blur-2xl"></div>
-
-          <div className="relative aspect-[21/9] rounded-[48px] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/10 group">
-            {/* Dark Overlay inside image */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220] via-transparent to-transparent opacity-80 z-10 pointer-events-none"></div>
-
-            <img
-              src={highlight.contentCoverUrl || highlight.imageUrl}
-              alt={highlight.title}
-              className="w-full h-full object-cover brightness-[0.8] saturate-150 group-hover:scale-105 transition-transform duration-[4s]"
-            />
-          </div>
-        </motion.div>
-      )}
-
-      {/* Article Body Precision Stylized */}
-      <article className="max-w-4xl mx-auto px-6 relative z-10 selection:bg-cyan-500 selection:text-slate-900">
-        <div className="space-y-12">
-          {highlight.body && highlight.body.length > 0 ? (
-            highlight.body.map((block) => {
-              switch (block.type) {
-                case 'heading':
-                  return (
-                    <h2 key={block.id} className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-none mt-24 mb-10 uppercase italic border-l-4 border-cyan-500 pl-8 pb-1">
-                      {block.text}
-                    </h2>
-                  );
-                case 'quote':
-                  return (
-                    <blockquote key={block.id} className="relative p-10 md:p-14 my-20 bg-[#121A2A] rounded-[40px] overflow-hidden border border-white/5 border-l-cyan-500 border-l-4 shadow-[inset_0_0_80px_rgba(0,0,0,0.5)] group transform hover:scale-[1.01] transition-transform">
-                      {/* Watermark quote symbol */}
-                      <div className="absolute -top-10 right-4 text-cyan-500/5 text-[250px] font-serif leading-none pointer-events-none h-full flex items-center">"</div>
-                      <p className="relative z-10 text-2xl md:text-4xl text-white font-black leading-[1.2] tracking-tighter uppercase italic">
-                        {block.text}
-                      </p>
-                    </blockquote>
-                  );
-                case 'bullet':
-                  return (
-                    <div key={block.id} className="flex gap-6 items-start group py-3 px-6 hover:bg-white/5 rounded-2xl transition-colors">
-                      <div className="mt-2 flex items-center justify-center w-4 h-4 rounded-sm bg-cyan-500/20 text-cyan-400">
-                        <span className="w-1.5 h-1.5 bg-cyan-400 rounded-sm"></span>
-                      </div>
-                      <p className="text-lg md:text-xl text-slate-300 leading-relaxed font-medium">{block.text}</p>
-                    </div>
-                  );
-                case 'image':
-                  return (
-                    <figure key={block.id} className="my-20 space-y-4">
-                      <div className="rounded-[40px] overflow-hidden border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative group">
-                        <div className="absolute inset-0 bg-transparent group-hover:bg-cyan-500/10 transition-colors pointer-events-none z-10"></div>
-                        <img src={block.imageUrl} alt={block.text} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" />
-                      </div>
-                      {block.text && (
-                        <figcaption className="text-center text-slate-500 text-[9px] font-black uppercase tracking-[0.3em] font-mono mt-6">
-                          // FIGURA: {block.text}
-                        </figcaption>
-                      )}
-                    </figure>
-                  );
-                case 'paragraph':
-                default:
-                  return <p key={block.id} className="text-lg md:text-2xl text-slate-400 leading-[1.8] font-medium my-6 whitespace-pre-wrap">{block.text}</p>;
-              }
-            })
-          ) : (
-            <div className="h-64 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-[40px] bg-white/5">
-              <span className="text-4xl mb-4">📠</span>
-              <p className="text-xs text-slate-500 font-black uppercase tracking-widest">Acesso Restrito - Registros Corrompidos</p>
-            </div>
-          )}
-        </div>
-
-        {/* CTA Elite */}
-        <div className="mt-32 p-12 md:p-20 bg-gradient-to-t from-[#121A2A] to-[#0D1525] border border-white/10 rounded-[64px] shadow-[inset_0_0_80px_rgba(0,0,0,0.5)] flex flex-col items-center text-center relative overflow-hidden group mb-10">
-          <div className="absolute -top-10 -right-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] group-hover:scale-150 transition-transform duration-[2s]" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
-
-          <h4 className="text-5xl md:text-7xl font-black mb-8 text-white tracking-tighter leading-none uppercase italic">
-            Impulsione sua<br />
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent inline-block mt-2">Estratégia</span>
-          </h4>
-          <p className="text-slate-400 text-lg md:text-xl mb-12 max-w-xl font-medium leading-relaxed">
-            Descubra como os módulos do <span className="text-white">Everest</span> podem integrar estas tendências de alta performance diretamente na sua operação.
-          </p>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/marketplace')}
-            className="relative px-16 py-7 bg-white text-slate-950 rounded-[28px] font-black text-xs uppercase tracking-[0.4em] transition-all hover:bg-cyan-400 shadow-[0_0_40px_rgba(34,211,238,0.2)] hover:shadow-[0_0_60px_rgba(34,211,238,0.5)] overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center gap-3">
-              Explorar Frameworks
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </span>
-          </motion.button>
-        </div>
-      </article>
     </div>
   );
 }

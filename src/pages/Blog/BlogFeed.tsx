@@ -53,9 +53,9 @@ export default function BlogFeed() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* Dark Header */}
-            <div className="bg-black pt-24 pb-32 px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-white" aria-label="Feed de Notícias Everest">
+            {/* Dark Header - Compacted */}
+            <div className="bg-black pt-6 pb-20 px-4 relative overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none opacity-20">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-[120px]"></div>
                 </div>
@@ -67,14 +67,14 @@ export default function BlogFeed() {
                                 <span className="w-2 h-2 bg-[#00FF41] rounded-full animate-pulse"></span>
                                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">ENT-CORE INTEL FEED</span>
                             </div>
-                            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-none">
+                            <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none">
                                 Blog <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-500">Everest</span>
                             </h1>
                         </div>
                         {isAuthenticated && (
                             <Link
                                 to="/blog/novo"
-                                className="px-8 py-5 bg-white text-[#0B1220] font-black text-xs uppercase tracking-[0.4em] border-2 border-white shadow-[8px_8px_0px_0px_rgba(29,78,216,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all inline-block"
+                                className="px-6 py-3 bg-white text-[#0B1220] font-black text-[10px] uppercase tracking-widest border border-white shadow-sm hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-block"
                             >
                                 + Novo Insight
                             </Link>
@@ -83,8 +83,8 @@ export default function BlogFeed() {
                 </div>
             </div>
 
-            {/* Feed Grid */}
-            <div className="max-w-7xl mx-auto px-4 -mt-16 pb-32 relative z-20">
+            {/* Feed Grid - Standard Position */}
+            <div className="max-w-7xl mx-auto px-4 -mt-8 pb-32 relative z-20">
                 {loading ? (
                     <div className="h-64 flex items-center justify-center bg-white border-4 border-[#0B1220] shadow-[12px_12px_0px_0px_rgba(11,18,32,1)]">
                         <span className="text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Consultando Arquivos ENT...</span>

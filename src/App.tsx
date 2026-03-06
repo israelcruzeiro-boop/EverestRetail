@@ -13,6 +13,9 @@ import ContentDetail from '@/pages/ContentDetail';
 import UserPanel from '@/pages/UserPanel';
 import BlogFeed from '@/pages/Blog/BlogFeed';
 import CreatePost from '@/pages/Blog/CreatePost';
+import HighlightsPage from '@/pages/HighlightsPage';
+import ModulesPage from '@/pages/ModulesPage';
+import VideocastsPage from '@/pages/Videocasts';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import DailyBonusLoader from '@/components/DailyBonusLoader';
 import MissionStreakLoader from '@/components/MissionStreakLoader';
@@ -45,6 +48,11 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="marketplace" element={<Marketplace />} />
+            <Route path="highlights" element={<HighlightsPage />} />
+            <Route path="destaques" element={<Navigate to="/highlights" replace />} />
+            <Route path="modules" element={<ModulesPage />} />
+            <Route path="modulos" element={<Navigate to="/modules" replace />} />
+            <Route path="videocasts" element={<VideocastsPage />} />
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />

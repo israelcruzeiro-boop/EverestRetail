@@ -119,7 +119,7 @@ export default function Partners() {
       accessor: (p) => (
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
-            {p.logo_url ? <img src={p.logo_url} className="w-full h-full object-contain" /> : <span className="text-xl">🤝</span>}
+            {p.logo_url ? <img src={p.logo_url} className="w-full h-full object-contain" alt={p.company_name} /> : <span className="text-xl">🤝</span>}
           </div>
           <div>
             <p className="font-bold text-slate-900">{p.company_name}</p>

@@ -18,7 +18,7 @@ export const homeContentRepo = {
             supabase.from('hero_carousel').select('*').order('sort_order', { ascending: true }),
             supabase.from('highlights').select('*').order('sort_order', { ascending: true }),
             supabase.from('suggested_products').select('*').order('sort_order', { ascending: true }),
-            supabase.from('videocasts').select('*').order('sort_order', { ascending: true })
+            supabase.from('videocasts').select('id, title, category_label, description, thumbnail_url, video_url, speaker_label, is_highlight, status, sort_order').order('sort_order', { ascending: true })
         ]);
 
         return {
@@ -66,6 +66,7 @@ export const homeContentRepo = {
                 thumbnailUrl: v.thumbnail_url,
                 videoUrl: v.video_url,
                 speakerLabel: v.speaker_label,
+                isHighlight: v.is_highlight,
                 status: v.status as any,
                 order: v.sort_order
             }))

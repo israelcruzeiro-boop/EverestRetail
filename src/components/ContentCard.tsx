@@ -7,11 +7,11 @@ interface ContentCardProps {
 
 export default function ContentCard({ content }: ContentCardProps) {
   return (
-    <article className="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-md">
+    <article className="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-md" aria-label={content.title}>
       <div className="relative h-56">
-        <img 
-          src={content.image} 
-          alt={content.title} 
+        <img
+          src={content.image}
+          alt={content.title}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
@@ -25,7 +25,7 @@ export default function ContentCard({ content }: ContentCardProps) {
         </div>
       </div>
       <div className="p-5">
-        <Link 
+        <Link
           to={content.relatedProductId ? `/product/${content.relatedProductId}` : '#'}
           className="block"
         >

@@ -59,7 +59,7 @@ export default function CreatePost() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4">
+        <div className="min-h-screen bg-slate-50 pt-16 pb-12 px-4 text-slate-900">
             <div className="max-w-3xl mx-auto space-y-12">
                 <button
                     onClick={() => navigate(-1)}
@@ -70,18 +70,18 @@ export default function CreatePost() {
                 </button>
 
                 <div className="bg-white border-4 border-[#0B1220] shadow-[12px_12px_0px_0px_rgba(11,18,32,1)] overflow-hidden">
-                    <div className="bg-[#0B1220] p-10 text-white">
-                        <h2 className="text-4xl font-black uppercase tracking-tighter">Novo Insight</h2>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#1D4ED8] mt-2">Compartilhe sua visão com o ecossistema Everest</p>
+                    <div className="bg-[#0B1220] p-6 text-white">
+                        <h2 className="text-2xl font-black uppercase tracking-tighter">Novo Insight</h2>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1D4ED8] mt-1">Compartilhe sua visão com o ecossistema Everest</p>
                     </div>
 
-                    <form onSubmit={handleSave} className="p-10 space-y-10">
+                    <form onSubmit={handleSave} className="p-6 space-y-6">
                         <FormField label="Título do Insight">
                             <Input
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 placeholder="EX: A NOVA ERA DA LOGÍSTICA PREDITIVA"
-                                className="!text-2xl font-black text-[#0B1220] placeholder:text-slate-200"
+                                className="!text-xl font-black text-[#0B1220] placeholder:text-slate-200"
                             />
                         </FormField>
 

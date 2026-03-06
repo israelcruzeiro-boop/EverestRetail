@@ -41,7 +41,7 @@ export default function Checkout() {
   if (!product) return null;
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-white relative overflow-hidden font-sans selection:bg-cyan-500/30" aria-label="Checkout Seguro">
       {/* Black Header Header - Minimal for Checkout */}
       <div className="bg-black pt-16 md:pt-24 pb-32 px-4 relative overflow-hidden border-b border-white/5">
         <div className="max-w-2xl mx-auto relative z-10 text-center">

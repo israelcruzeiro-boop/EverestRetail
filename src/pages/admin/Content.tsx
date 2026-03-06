@@ -36,7 +36,7 @@ export default function Content() {
   });
 
   const [videocastForm, setVideocastForm] = useState<Partial<VideoCast>>({
-    title: '', categoryLabel: '', description: '', thumbnailUrl: '', videoUrl: '', speakerLabel: '', status: 'active', order: 1
+    title: '', categoryLabel: '', description: '', thumbnailUrl: '', videoUrl: '', speakerLabel: '', status: 'active', order: 1, isHighlight: false
   });
 
   const [heroForm, setHeroForm] = useState<Partial<HeroSlide>>({
@@ -86,7 +86,7 @@ export default function Content() {
     } else if (activeTab === 'suggested') {
       setSuggestedForm(item || { productId: products[0]?.id || '', customTitle: '', customCta: 'Saber mais', status: 'active', order: config.suggested.length + 1 });
     } else if (activeTab === 'videocasts') {
-      setVideocastForm(item || { title: '', categoryLabel: '', description: '', thumbnailUrl: '', videoUrl: '', speakerLabel: '', status: 'active', order: config.videocasts.length + 1 });
+      setVideocastForm(item || { title: '', categoryLabel: '', description: '', thumbnailUrl: '', videoUrl: '', speakerLabel: '', status: 'active', order: config.videocasts.length + 1, isHighlight: false });
     } else if (activeTab === 'hero') {
       setHeroForm(item || { imageUrl: '', altText: '', title: '', subtitle: '', ctaLabel: 'Explorar Marketplace', linkUrl: '/marketplace', status: 'active', order: config.hero.length + 1 });
     }
@@ -191,6 +191,7 @@ export default function Content() {
           thumbnailUrl: videocastForm.thumbnailUrl,
           videoUrl: videocastForm.videoUrl,
           speakerLabel: videocastForm.speakerLabel,
+          isHighlight: videocastForm.isHighlight,
           status: videocastForm.status,
           order: videocastForm.order
         };
@@ -203,6 +204,7 @@ export default function Content() {
             thumbnail_url: item.thumbnailUrl,
             video_url: item.videoUrl,
             speaker_label: item.speakerLabel,
+            is_highlight: item.isHighlight,
             status: item.status,
             sort_order: item.order,
             updated_at: new Date().toISOString()
@@ -299,12 +301,12 @@ export default function Content() {
       } />
 
       <div className="p-4 md:p-12 max-w-7xl mx-auto space-y-12">
-        <div className="flex border-b-4 border-[#0B1220] overflow-x-auto no-scrollbar shrink-0">
+        <div className="flex border-b-4 border-[#0B1220] overflow-x-auto no-scrollbar shrink-0 snap-x snap-mandatory px-4">
           {(['hero', 'highlights', 'suggested', 'videocasts'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-5 text-[10px] font-black transition-all border-b-4 whitespace-nowrap uppercase tracking-[0.2em] ${activeTab === tab ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220] hover:bg-slate-50'}`}
+              className={`px-8 py-5 text-[10px] font-black transition-all border-b-4 whitespace-nowrap uppercase tracking-[0.2em] snap-start ${activeTab === tab ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220] hover:bg-slate-50'}`}
             >
               {tab === 'highlights' ? 'CURADORIA SEMANAL' : tab === 'suggested' ? 'SUGESTÕES IA' : tab === 'videocasts' ? 'VÍDEO-CASTS' : 'CARROSSEL HERO'}
             </button>
@@ -474,9 +476,16 @@ export default function Content() {
                 {
                   header: 'STATUS',
                   accessor: (v) => (
-                    <span className={`px-3 py-1 border-2 font-black uppercase tracking-widest text-[9px] ${v.status === 'active' ? 'bg-[#00FF41] text-[#0B1220] border-[#0B1220]' : 'bg-slate-200 text-slate-500 border-[#0B1220]'}`}>
-                      {v.status === 'active' ? 'REPRODUZÍVEL' : 'OFFLINE'}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`px-3 py-1 border-2 font-black uppercase tracking-widest text-[9px] inline-block ${v.status === 'active' ? 'bg-[#00FF41] text-[#0B1220] border-[#0B1220]' : 'bg-slate-200 text-slate-500 border-[#0B1220]'}`}>
+                        {v.status === 'active' ? 'REPRODUZÍVEL' : 'OFFLINE'}
+                      </span>
+                      {v.isHighlight && (
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 border border-amber-200">
+                          <span className="text-amber-500">★</span> Destaque Home
+                        </span>
+                      )}
+                    </div>
                   )
                 },
                 {
@@ -529,16 +538,16 @@ export default function Content() {
       >
         {activeTab === 'highlights' && (
           <div className="flex flex-col h-full max-h-[70vh]">
-            <div className="flex border-b-4 border-[#0B1220] mb-10 overflow-x-auto no-scrollbar shrink-0">
+            <div className="flex border-b-4 border-[#0B1220] mb-10 overflow-x-auto no-scrollbar shrink-0 snap-x snap-mandatory px-4">
               <button
                 onClick={() => setModalTab('card')}
-                className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] border-b-4 transition-all whitespace-nowrap ${modalTab === 'card' ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220]'}`}
+                className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] border-b-4 transition-all whitespace-nowrap snap-start ${modalTab === 'card' ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220]'}`}
               >
                 FRONT-END DO CARD
               </button>
               <button
                 onClick={() => setModalTab('content')}
-                className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] border-b-4 transition-all whitespace-nowrap ${modalTab === 'content' ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220]'}`}
+                className={`px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] border-b-4 transition-all whitespace-nowrap snap-start ${modalTab === 'content' ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220]'}`}
               >
                 MATÉRIA COMPLETA
               </button>
@@ -766,6 +775,23 @@ export default function Content() {
                   <option value="inactive">REMOVER DO FEED</option>
                 </Select>
               </FormField>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 border border-[#0B1220] bg-slate-50">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!videocastForm.isHighlight}
+                  onChange={(e) => setVideocastForm({ ...videocastForm, isHighlight: e.target.checked })}
+                  className="w-5 h-5 accent-[#1D4ED8]"
+                />
+                <div className="space-y-1">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-[#0B1220] flex items-center gap-2">
+                    <span className="text-amber-500 text-lg leading-none">★</span> Destacar na Home
+                  </span>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-tight">Se marcado, este vídeo aparecerá na vitrine principal da Home (limite de 3). Todos os vídeos ativos continuarão disponíveis na página completa de Videocasts.</p>
+                </div>
+              </label>
             </div>
           </div>
         )}

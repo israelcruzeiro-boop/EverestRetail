@@ -405,13 +405,13 @@ export default function Products() {
       >
         <div className="flex flex-col h-full max-h-[70vh]">
           {/* Tabs header - Brutalist Sticky */}
-          <div className="flex border-b-4 border-[#0B1220] mb-10 overflow-x-auto no-scrollbar shrink-0">
+          <div className="flex border-b-4 border-[#0B1220] mb-10 overflow-x-auto no-scrollbar shrink-0 snap-x snap-mandatory px-4">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-4 transition-all
+                  px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap border-b-4 transition-all snap-start
                   ${activeTab === tab.id ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-[#0B1220] hover:bg-slate-50'}
                 `}
               >

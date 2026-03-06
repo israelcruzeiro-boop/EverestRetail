@@ -35,32 +35,21 @@ export default function RewardsTab() {
     const completedCount = videos.filter(v => (completionsCount[v.id] || 0) >= (v.daily_limit || 1)).length;
 
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 md:p-8 bg-white border border-slate-100 rounded-3xl shadow-sm">
-                <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-500/10 border border-amber-500/20">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                        <span className="text-amber-600 font-mono text-[9px] uppercase tracking-[0.4em]">Earn Coins v3.0</span>
-                    </div>
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">Central de Recompensas</h3>
-                    <p className="text-slate-400 font-medium max-w-md text-sm">Assista conteúdos selecionados e acumule Everest Coins.</p>
+        <div className="space-y-6 text-slate-900">
+            {/* Header - Simple */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2 border-b border-slate-100 pb-4">
+                <div className="space-y-1">
+                    <h2 className="text-xl font-bold text-slate-900 leading-tight">Central de Recompensas</h2>
+                    <p className="text-slate-500 font-medium max-w-md text-sm">Assista conteúdos e acumule Everest Coins.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-5 rounded-2xl shadow-lg flex items-center gap-4 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-lg group-hover:rotate-12 transition-transform">🪙</div>
-                        <div className="relative z-10">
-                            <span className="text-[8px] font-black uppercase text-white/30 block tracking-widest">Saldo</span>
-                            <span className="text-2xl font-black tracking-tighter tabular-nums">{balance} <span className="text-xs text-cyan-400 font-mono">EC</span></span>
+                <div className="flex items-center gap-3">
+                    <div className="bg-slate-50 border border-slate-200 p-2.5 px-4 rounded-xl flex items-center gap-3">
+                        <div className="text-xl">🪙</div>
+                        <div>
+                            <span className="text-[10px] font-bold uppercase text-slate-500 block tracking-wider leading-none">Saldo</span>
+                            <span className="text-base font-bold text-slate-800">{balance} <span className="text-[11px] text-[#ee4d2d]">EC</span></span>
                         </div>
                     </div>
-                    {videos.length > 0 && (
-                        <div className="hidden md:flex flex-col items-center bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl">
-                            <span className="text-xl font-black text-emerald-600">{completedCount}/{videos.length}</span>
-                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Resgatados</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
