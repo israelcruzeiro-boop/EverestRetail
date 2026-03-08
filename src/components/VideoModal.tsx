@@ -32,6 +32,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
   const [missionResult, setMissionResult] = useState<any>(null);
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [isReady, setIsReady] = useState(false);
+  const [isMissionAvailable, setIsMissionAvailable] = useState<boolean | null>(null);
   const MIN_WATCH_SECONDS = 30;
 
   // Helper para extrair ID do YouTube
@@ -52,6 +53,27 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
     setMissionResult(null);
     setWatchedSeconds(0);
     isProcessingRef.current = false;
+    setIsMissionAvailable(null);
+
+    // Verificar disponibilidade da missão
+    const checkAvailability = async () => {
+      if (!isAuthenticated) return;
+
+      let available = false;
+      if (type === 'sponsored') {
+        const reached = await sponsoredVideosRepo.checkTodayLimitReached(id);
+        available = !reached;
+      } else if (type === 'videocast') {
+        const completed = await coinRepo.checkMissionCompletion('watch_videocast', id);
+        available = !completed;
+      } else {
+        // Para 'mission', assume disponível ou pode-se expandir a lógica se necessário
+        available = true;
+      }
+      setIsMissionAvailable(available);
+    };
+
+    checkAvailability();
 
     // Carregar API do YouTube se necessário
     if (!window.YT) {
@@ -104,7 +126,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
   }, [isOpen, videoId]);
 
   const startTracking = () => {
-    if (type === 'videocast' || progressInterval.current || missionCompleted || rewardClaimed || !isAuthenticated) return;
+    if (progressInterval.current || missionCompleted || rewardClaimed || !isAuthenticated || isMissionAvailable === false) return;
 
     progressInterval.current = setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
@@ -198,7 +220,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl, title, id, type 
               />
 
               {/* Progress Overlay */}
-              {!missionCompleted && !rewardClaimed && (
+              {!missionCompleted && !rewardClaimed && isMissionAvailable === true && (
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">

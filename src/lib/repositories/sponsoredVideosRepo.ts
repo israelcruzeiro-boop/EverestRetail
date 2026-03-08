@@ -136,27 +136,36 @@ export const sponsoredVideosRepo = {
     },
 
     /**
-     * Verifica se o usuário já completou o vídeo hoje.
+     * Verifica se o usuário já atingiu o limite diário do vídeo.
      */
-    async checkTodayCompletion(videoId: string): Promise<boolean> {
+    async checkTodayLimitReached(videoId: string): Promise<boolean> {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return false;
+        if (!user) return true;
 
-        const { data, error } = await supabase
+        // 1. Buscar o limite do vídeo
+        const { data: video } = await supabase
+            .from('sponsored_videos')
+            .select('daily_limit')
+            .eq('id', videoId)
+            .single();
+
+        if (!video) return true;
+
+        // 2. Contar visualizações de hoje
+        const { count, error } = await supabase
             .from('video_views')
-            .select('id')
+            .select('*', { count: 'exact', head: true })
             .eq('profile_id', user.id)
             .eq('video_id', videoId)
             .eq('view_date', getSaoPauloDate())
-            .eq('rewarded', true)
-            .maybeSingle();
+            .eq('rewarded', true);
 
         if (error) {
-            console.error('Erro ao verificar conclusão hoje:', error);
-            return false;
+            console.error('Erro ao verificar limite hoje:', error);
+            return true;
         }
 
-        return !!data;
+        return (count || 0) >= video.daily_limit;
     },
 
     /**

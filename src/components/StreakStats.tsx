@@ -18,7 +18,7 @@ export default function StreakStats() {
         <div className="h-32 bg-white/10 animate-pulse border border-white/20 rounded-3xl" />
     );
 
-    const streak = progress?.login_streak || 0;
+    const streak = progress?.effective_streak ?? 0;
 
     return (
         <div className="bg-white border border-slate-100 p-3 md:p-4 rounded-2xl shadow-sm hover:shadow-md transition-all group">

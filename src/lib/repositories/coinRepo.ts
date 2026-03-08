@@ -85,6 +85,56 @@ export const coinRepo = {
     },
 
     /**
+     * Verifica se uma missão específica foi completada hoje.
+     */
+    async checkMissionCompletion(missionCode: string, referenceId?: string): Promise<boolean> {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return false;
+
+            const { data: mission } = await supabase
+                .from('missions')
+                .select('id, daily_limit')
+                .eq('code', missionCode)
+                .eq('active', true)
+                .single();
+
+            if (!mission) return false;
+
+            // 1. Verificar se o limite diário da missão já foi atingido
+            const { count: totalCompletions, error: countError } = await supabase
+                .from('mission_completions')
+                .select('*', { count: 'exact', head: true })
+                .eq('profile_id', user.id)
+                .eq('mission_id', mission.id)
+                .gte('completed_at', getSaoPauloDate());
+
+            if (countError) throw countError;
+
+            const limitReached = (totalCompletions || 0) >= mission.daily_limit;
+
+            // 2. Se houver referenceId, verificar também se ESTA referência já foi completada
+            if (referenceId) {
+                const { data: refCompletion } = await supabase
+                    .from('mission_completions')
+                    .select('id')
+                    .eq('profile_id', user.id)
+                    .eq('mission_id', mission.id)
+                    .eq('reference_id', referenceId)
+                    .gte('completed_at', getSaoPauloDate())
+                    .maybeSingle();
+
+                return !!refCompletion || limitReached;
+            }
+
+            return limitReached;
+        } catch (err) {
+            console.error('Erro fatal em checkMissionCompletion:', err);
+            return false;
+        }
+    },
+
+    /**
      * Busca as missões ativas e verifica se foram completadas hoje pelo usuário.
      */
     async getUserMissions() {
