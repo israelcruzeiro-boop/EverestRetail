@@ -13,6 +13,7 @@ export interface BlogPost {
         avatar_url: string | null;
     };
     boosted_until?: string;
+    is_highlight?: boolean;
 }
 
 export interface PostRating {

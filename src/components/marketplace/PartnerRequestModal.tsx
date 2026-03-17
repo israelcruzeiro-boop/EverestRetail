@@ -3,6 +3,8 @@ import Modal from '@/components/admin/Modal';
 import { useAuth } from '@/context/AuthContext';
 import { partnersRepo } from '@/lib/repositories/partnersRepo';
 import { publicationRequestsRepo } from '@/lib/repositories/publicationRequestsRepo';
+import { storageUploadRepo } from '@/lib/repositories/storageUploadRepo';
+import { Image as ImageIcon, Upload, X } from 'lucide-react';
 
 interface PartnerRequestModalProps {
   isOpen: boolean;
@@ -24,8 +26,11 @@ export default function PartnerRequestModal({ isOpen, onClose }: PartnerRequestM
     category: 'SaaS',
     price: '',
     billingPeriod: 'monthly' as 'monthly' | 'yearly',
-    description: ''
+    description: '',
+    coverImageUrl: ''
   });
+
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -65,7 +70,8 @@ export default function PartnerRequestModal({ isOpen, onClose }: PartnerRequestM
         priceCents,
         billingPeriod: formData.billingPeriod,
         description: formData.description,
-        shortDescription: formData.description.substring(0, 100)
+        shortDescription: formData.description.substring(0, 100),
+        coverImageUrl: formData.coverImageUrl || undefined
       });
 
       showToast('Solicitação enviada com sucesso! O admin analisará sua proposta.', 100, 'xp');
@@ -82,7 +88,8 @@ export default function PartnerRequestModal({ isOpen, onClose }: PartnerRequestM
         category: 'SaaS',
         price: '',
         billingPeriod: 'monthly',
-        description: ''
+        description: '',
+        coverImageUrl: ''
       });
     } catch (error) {
       console.error('Erro ao enviar solicitação:', error);
@@ -240,6 +247,75 @@ export default function PartnerRequestModal({ isOpen, onClose }: PartnerRequestM
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-[#0B1220] mb-3 opacity-60">
+                  Imagem da Solução / Capa
+                </label>
+                
+                <div className="flex flex-col gap-4">
+                  {formData.coverImageUrl ? (
+                    <div className="relative w-full h-48 border-4 border-[#0B1220] overflow-hidden group">
+                      <img 
+                        src={formData.coverImageUrl} 
+                        className="w-full h-full object-contain bg-slate-50" 
+                        alt="Preview" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, coverImageUrl: '' })}
+                        className="absolute top-2 right-2 bg-[#FF4D00] text-white p-2 border-2 border-[#0B1220] shadow-[2px_2px_0px_0px_rgba(11,18,32,1)] hover:scale-110 transition-transform"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className={`
+                      flex flex-col items-center justify-center w-full h-48 
+                      border-2 border-dashed border-slate-300 bg-slate-50 
+                      cursor-pointer hover:bg-white hover:border-blue-600 transition-all group
+                      ${uploading ? 'opacity-50 cursor-wait' : ''}
+                    `}>
+                      <div className="flex flex-col items-center justify-center p-6 text-center">
+                        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
+                          {uploading ? (
+                            <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Upload className="text-slate-400 group-hover:text-blue-600" size={24} />
+                          )}
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-[#0B1220]">
+                          {uploading ? 'Enviando...' : 'Clique para enviar imagem da solução'}
+                        </p>
+                        <p className="text-[9px] font-bold text-slate-300 mt-1 uppercase">
+                          PNG, JPG ou WEBP (Max 5MB)
+                        </p>
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        disabled={uploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          
+                          setUploading(true);
+                          try {
+                            const url = await storageUploadRepo.uploadPartnerImage(file, 'requests');
+                            setFormData({ ...formData, coverImageUrl: url });
+                          } catch (err: any) {
+                            console.error(err);
+                            alert(err.message || 'Erro ao fazer upload da imagem');
+                          } finally {
+                            setUploading(false);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
            </div>
         </div>

@@ -6,6 +6,7 @@ export const blogRepo = {
         const { data, error } = await supabase
             .from('posts')
             .select('*, profile:profiles(name, avatar_url)')
+            .order('is_highlight', { ascending: false })
             .order('boosted_until', { ascending: false, nullsFirst: false })
             .order('created_at', { ascending: false });
 
@@ -129,6 +130,20 @@ export const blogRepo = {
 
         if (error) {
             console.error('Error deleting post:', error);
+            return false;
+        }
+
+        return true;
+    },
+
+    async toggleHighlight(postId: string, status: boolean): Promise<boolean> {
+        const { error } = await supabase
+            .from('posts')
+            .update({ is_highlight: status })
+            .eq('id', postId);
+
+        if (error) {
+            console.error('Error toggling highlight:', error);
             return false;
         }
 

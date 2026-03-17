@@ -100,6 +100,28 @@ export default function AdminBlog() {
                                     )
                                 },
                                 {
+                                    header: 'DESTAQUE',
+                                    accessor: (p) => (
+                                        <button
+                                            onClick={async () => {
+                                                const success = await blogRepo.toggleHighlight(p.id, !p.is_highlight);
+                                                if (success) {
+                                                    await loadPosts();
+                                                } else {
+                                                    alert('Erro ao atualizar destaque. Verifique suas permissões ou conexão.');
+                                                }
+                                            }}
+                                            className={`px-3 py-1 border-2 font-black text-[9px] uppercase tracking-widest transition-all ${
+                                                p.is_highlight 
+                                                    ? 'bg-[#1D4ED8] text-white border-[#0B1220] shadow-[4px_4px_0px_0px_rgba(11,18,32,1)]' 
+                                                    : 'bg-white text-slate-400 border-slate-200 hover:border-[#0B1220] hover:text-[#0B1220]'
+                                            }`}
+                                        >
+                                            {p.is_highlight ? '★ DESTACADO' : 'DESTACAR'}
+                                        </button>
+                                    )
+                                },
+                                {
                                     header: 'AÇÕES',
                                     align: 'right',
                                     accessor: (p) => (

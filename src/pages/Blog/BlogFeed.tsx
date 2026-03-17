@@ -98,7 +98,12 @@ export default function BlogFeed() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {posts.map((post) => (
-                            <div key={post.id}>
+                            <div key={post.id} className="relative">
+                                {post.is_highlight && (
+                                    <div className="absolute -top-3 -right-3 z-30 bg-[#1D4ED8] text-white text-[10px] font-black px-4 py-1 border-2 border-[#0B1220] shadow-[4px_4px_0px_0px_rgba(11,18,32,1)] uppercase tracking-widest">
+                                        ★ Destaque
+                                    </div>
+                                )}
                                 <PostCard
                                     post={post}
                                     onClick={() => setSelectedPost(post)}

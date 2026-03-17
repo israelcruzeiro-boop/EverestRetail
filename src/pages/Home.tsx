@@ -51,8 +51,13 @@ export default function Home() {
         const now = new Date();
 
         const boostedPosts = (allPosts || []).filter(p => {
+          if (p.is_highlight) return true;
           if (!p.boosted_until) return false;
           return parseDateSafe(p.boosted_until) > now;
+        }).sort((a, b) => {
+          if (a.is_highlight && !b.is_highlight) return -1;
+          if (!a.is_highlight && b.is_highlight) return 1;
+          return 0;
         }).slice(0, 3);
 
         setConfig(homeConfig);
