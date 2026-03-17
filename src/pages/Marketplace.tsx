@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { supabaseService } from '@/lib/supabaseService';
 import ProductCard from '@/components/ProductCard';
@@ -5,12 +6,25 @@ import { productReviewsRepo } from '@/lib/repositories/productReviewsRepo';
 import { motion } from 'framer-motion';
 import { AdminProduct } from '@/types/admin';
 import { analytics } from '@/lib/analytics';
+import { useAuth } from '@/context/AuthContext';
+import PartnerRequestModal from '@/components/marketplace/PartnerRequestModal';
 
 export default function Marketplace() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Todas');
   const [loading, setLoading] = useState(true);
+  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+
+  const handlePartnerClick = () => {
+    if (isAuthenticated) {
+      setIsPartnerModalOpen(true);
+    } else {
+      navigate('/login?mode=signup');
+    }
+  };
 
   const categories = ['Todas', 'SaaS', 'Serviço', 'Hardware', 'Destaque', 'Estratégia'];
 
@@ -65,6 +79,17 @@ export default function Marketplace() {
               </div>
             </div>
 
+            {/* Atalho Parceiro - Visível para todos */}
+            <button 
+              onClick={handlePartnerClick}
+              className="hidden md:flex h-10 px-4 bg-[#FF4D00] text-white rounded-md items-center gap-2 text-[11px] font-black uppercase tracking-widest border-2 border-[#0B1220] shadow-[2px_2px_0px_0px_rgba(11,18,32,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all shrink-0"
+            >
+              <span>Quero ser parceiro</span>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+
             <button className="w-9 h-9 md:h-10 md:w-10 bg-slate-100 rounded-md flex items-center justify-center text-slate-600 border border-slate-200 hover:bg-slate-200 transition-colors shrink-0">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -73,19 +98,29 @@ export default function Marketplace() {
           </div>
 
           {/* Category Chips - Scroll Horizontal */}
-          <div className="flex overflow-x-auto gap-1.5 pb-1 hide-scrollbar -mx-4 px-4">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`flex-shrink-0 px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all border ${activeCategory === cat
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex overflow-x-auto gap-1.5 pb-1 hide-scrollbar flex-1 whitespace-nowrap">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`flex-shrink-0 px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all border ${activeCategory === cat
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Versão mobile do botão parceiro */}
+            <button 
+              onClick={handlePartnerClick}
+              className="md:hidden flex h-7 px-2 bg-[#FF4D00] text-white rounded-sm items-center gap-1.5 text-[9px] font-black uppercase tracking-wider border-2 border-[#0B1220] shadow-[1px_1px_0px_0px_rgba(11,18,32,1)] shrink-0"
+            >
+              Parceria +
+            </button>
           </div>
         </div>
       </div>
@@ -112,6 +147,11 @@ export default function Marketplace() {
           )}
         </div>
       </div>
+
+      <PartnerRequestModal 
+        isOpen={isPartnerModalOpen} 
+        onClose={() => setIsPartnerModalOpen(false)} 
+      />
     </div>
   );
 }

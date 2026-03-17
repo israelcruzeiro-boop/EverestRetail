@@ -308,7 +308,7 @@ export default function Content() {
               onClick={() => setActiveTab(tab)}
               className={`px-8 py-5 text-[10px] font-black transition-all border-b-4 whitespace-nowrap uppercase tracking-[0.2em] snap-start ${activeTab === tab ? 'border-[#1D4ED8] text-[#1D4ED8] bg-slate-50' : 'border-transparent text-slate-400 hover:text-[#0B1220] hover:bg-slate-50'}`}
             >
-              {tab === 'highlights' ? 'CURADORIA SEMANAL' : tab === 'suggested' ? 'SUGESTÕES IA' : tab === 'videocasts' ? 'VÍDEO-CASTS' : 'CARROSSEL HERO'}
+              {tab === 'highlights' ? 'CURADORIA SEMANAL' : tab === 'suggested' ? 'SUGESTÕES IA' : tab === 'videocasts' ? 'EVERCAST' : 'CARROSSEL HERO'}
             </button>
           ))}
         </div>

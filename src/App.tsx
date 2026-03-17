@@ -16,6 +16,9 @@ import CreatePost from '@/pages/Blog/CreatePost';
 import HighlightsPage from '@/pages/HighlightsPage';
 import ModulesPage from '@/pages/ModulesPage';
 import VideocastsPage from '@/pages/Videocasts';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfUse from '@/pages/TermsOfUse';
+import AIImmersion from '@/pages/AIImmersion';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import DailyBonusLoader from '@/components/DailyBonusLoader';
 import MissionStreakLoader from '@/components/MissionStreakLoader';
@@ -56,6 +59,8 @@ export default function App() {
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="conteudo/:slug" element={<ContentDetail />} />
             <Route path="login" element={<Login />} />
+            <Route path="privacidade" element={<PrivacyPolicy />} />
+            <Route path="termos" element={<TermsOfUse />} />
 
             {/* Public Blog Routes */}
             <Route path="blog" element={<BlogFeed />} />
@@ -81,6 +86,9 @@ export default function App() {
             <Route path="sponsored-videos" element={<AdminSponsoredVideos />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
+
+          {/* Standalone Landing Pages (outside Layout) */}
+          <Route path="imersao-ia" element={<AIImmersion />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

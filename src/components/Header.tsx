@@ -9,7 +9,7 @@ export default function Header() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/marketplace', label: 'Marketplace' },
-    { path: '/videocasts', label: 'Videocasts' },
+    { path: '/videocasts', label: 'EverCast' },
     { path: '/blog', label: 'Blog' },
   ];
 

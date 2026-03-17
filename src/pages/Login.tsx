@@ -19,7 +19,14 @@ export default function Login() {
 
   useEffect(() => {
     analytics.track('page_view');
-  }, []);
+    
+    // Capturar modo da URL
+    const params = new URLSearchParams(location.search);
+    const urlMode = params.get('mode');
+    if (urlMode === 'signup' || urlMode === 'login') {
+      setMode(urlMode as 'signup' | 'login');
+    }
+  }, [location.search]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();

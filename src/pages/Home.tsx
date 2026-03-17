@@ -93,11 +93,11 @@ export default function Home() {
 
   // Imagens padrão (Fallback)
   const defaultHeroSlides = [
-    { imageUrl: '/hero/hero-1.jpg', altText: 'Everest Retail Branding' },
-    { imageUrl: '/hero/hero-2.jpg', altText: 'Everest Outdoor Billboard' },
-    { imageUrl: '/hero/hero-3.jpg', altText: 'Everest Corporate Office' },
-    { imageUrl: '/hero/hero-4.jpg', altText: 'Everest Strategic Advertising' },
-    { imageUrl: '/hero/hero-5.jpg', altText: 'Everest Urban Media' },
+    { imageUrl: '/hero/hero-1.jpg', altText: 'Everest Retail Branding', linkUrl: '/imersao-ia' },
+    { imageUrl: '/hero/hero-2.jpg', altText: 'Everest Outdoor Billboard', linkUrl: '/imersao-ia' },
+    { imageUrl: '/hero/hero-3.jpg', altText: 'Everest Corporate Office', linkUrl: '/imersao-ia' },
+    { imageUrl: '/hero/hero-4.jpg', altText: 'Everest Strategic Advertising', linkUrl: '/imersao-ia' },
+    { imageUrl: '/hero/hero-5.jpg', altText: 'Everest Urban Media', linkUrl: '/imersao-ia' },
   ];
 
   const currentSlides = dynamicHeroSlides.length > 0 ? dynamicHeroSlides : defaultHeroSlides;
@@ -105,15 +105,34 @@ export default function Home() {
   return (
     <div className="bg-[#f5f5f5] min-h-screen pb-20 text-slate-900 font-sans">
 
-      {/* 1. Banner Carrossel */}
+      {/* 1. Hero Section — Headline + Banner */}
       <div className="max-w-7xl mx-auto px-2 sm:px-4 mt-4 md:mt-6">
-        <BannerCarousel slides={currentSlides} />
+        <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6">
+          {/* Headline à Esquerda */}
+          <div className="flex flex-col justify-center md:w-[42%] py-4 md:py-6 px-2 md:px-0">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[26px] sm:text-[30px] md:text-[36px] lg:text-[42px] font-black text-[#0B1220] leading-[1.1] tracking-tight"
+            >
+              Tudo o que o varejo precisa para{' '}
+              <span className="text-red-600">se atualizar</span>, aprender e evoluir.
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-4 text-[11px] md:text-[12px] font-black text-slate-400 uppercase tracking-[0.2em]"
+            >
+              Acesse conteúdos, evercasts e soluções em uma plataforma criada para conectar estratégia, tecnologia e performance no varejo.
+            </motion.p>
+          </div>
 
-        {/* Tagline */}
-        <div className="mt-4 text-center md:text-left px-2">
-          <p className="text-[12px] md:text-sm font-black text-slate-400 uppercase tracking-[0.2em]">
-            O marketplace de tecnologia para varejo.
-          </p>
+          {/* Banner Carrossel à Direita */}
+          <div className="md:w-[58%] flex-shrink-0">
+            <BannerCarousel slides={currentSlides} bannerLink="/imersao-ia" />
+          </div>
         </div>
       </div>
 
@@ -126,6 +145,9 @@ export default function Home() {
               title="Destaques da Semana"
               link={{ to: '/highlights', label: 'Ver Todos' }}
             />
+            <p className="text-[12px] md:text-[13px] text-slate-500 -mt-2 mb-4 leading-relaxed max-w-2xl">
+              Os principais conteúdos e soluções selecionados para quem quer acompanhar o que está movimentando o varejo.
+            </p>
             {/* Grid 2 no mobile, 6 no desktop */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4 pb-2 md:pb-0">
               {loading ? (
@@ -182,10 +204,13 @@ export default function Home() {
         {/* 5. EverCast */}
         {activeVideocasts.length > 0 && (
           <section className="my-8">
-            <h2 className="text-[16px] md:text-[18px] font-bold text-slate-800 mb-3 md:mb-4 uppercase tracking-tight flex items-center gap-2">
+            <h2 className="text-[16px] md:text-[18px] font-bold text-slate-800 mb-1 uppercase tracking-tight flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               EverCast
             </h2>
+            <p className="text-[12px] md:text-[13px] text-slate-500 mb-4 leading-relaxed max-w-2xl">
+              Conversas, ideias e reflexões para quem vive o varejo na prática.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {activeVideocasts.map((v) => (
                 <div
@@ -215,7 +240,7 @@ export default function Home() {
 
             <div className="mt-6 border-t border-slate-200/60 pt-4 text-left">
               <Link to="/videocasts" className="text-[10px] font-black text-[#0B1220] hover:text-red-600 uppercase tracking-[0.3em] transition-colors inline-flex items-center gap-2 group">
-                ACESSAR TODOS OS VÍDEOS <span className="text-lg leading-none group-hover:translate-x-1 transition-transform">→</span>
+                ACESSAR TODOS OS EVERCASTS <span className="text-lg leading-none group-hover:translate-x-1 transition-transform">→</span>
               </Link>
             </div>
           </section>
@@ -224,10 +249,13 @@ export default function Home() {
         {/* 6. Vozes em Destaque */}
         {highlightedPosts.length > 0 && (
           <section className="my-8">
-            <h2 className="text-[18px] md:text-xl font-black text-[#0B1220] mb-4 md:mb-6 uppercase tracking-tighter flex items-center gap-2">
+            <h2 className="text-[18px] md:text-xl font-black text-[#0B1220] mb-1 uppercase tracking-tighter flex items-center gap-2">
               <span className="w-2.5 h-2.5 bg-[#1D4ED8] inline-block"></span>
               Vozes em Destaque
             </h2>
+            <p className="text-[12px] md:text-[13px] text-slate-500 mb-4 md:mb-6 leading-relaxed max-w-2xl">
+              Artigos, análises e pontos de vista de quem está construindo o mercado todos os dias.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {highlightedPosts.map((post) => (
                 <div

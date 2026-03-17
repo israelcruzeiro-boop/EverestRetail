@@ -48,7 +48,7 @@ export default function VideocastsPage() {
                                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">Everest Studios</span>
                             </div>
                             <h1 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase leading-none">
-                                Central de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Videocasts</span>
+                                Central de <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">EverCast</span>
                             </h1>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ export interface PartnerRow {
     contact_email: string | null;
     contact_phone: string | null;
     logo_url: string | null;
+    description: string | null;
     status: 'pending' | 'approved' | 'blocked';
     created_at: string;
     updated_at: string;
@@ -20,6 +21,7 @@ export const partnersRepo = {
         contactEmail?: string;
         contactPhone?: string;
         logoUrl?: string;
+        description?: string;
     }): Promise<PartnerRow | null> {
         if (!supabase) return null;
 
@@ -40,6 +42,7 @@ export const partnersRepo = {
             contact_email: data.contactEmail || null,
             contact_phone: data.contactPhone || null,
             logo_url: data.logoUrl || null,
+            description: data.description || null,
         };
 
         if (existing) {
