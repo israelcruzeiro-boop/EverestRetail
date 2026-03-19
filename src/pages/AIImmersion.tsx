@@ -19,7 +19,7 @@ const IMAGES = {
   gabriel: 'https://ik.imagekit.io/lflb43qwh/ENT/GabrielC.jpeg?updatedAt=1773885482950',
   sicredi: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Sicredi.png?updatedAt=1773712987920',
   santaPermuta: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Santa%20Permuta.jpg?updatedAt=1773712988606',
-  ent: '/ent-logo.png'
+  ent: 'https://ik.imagekit.io/lflb43qwh/ENT/Empresasnotopo2.png'
 };
 
 const PAYMENT_URL = 'https://clkdmg.site/pay/imersao-de-ia-na-pratica';
@@ -266,7 +266,7 @@ export default function AIImmersion() {
                  className="flex flex-col items-center gap-6"
                >
                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Realização</span>
-                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                  <div className="h-20 md:h-32 hover:scale-105 transition-transform duration-500">
                      <img src={IMAGES.ent} alt="ENT" className="h-full w-auto object-contain" />
                   </div>
                </motion.div>
@@ -280,7 +280,7 @@ export default function AIImmersion() {
                  className="flex flex-col items-center gap-6"
                >
                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Patrocínio Master</span>
-                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                  <div className="h-20 md:h-32 hover:scale-105 transition-transform duration-500">
                      <img src={IMAGES.sicredi} alt="Sicredi" className="h-full w-auto object-contain" />
                   </div>
                </motion.div>
@@ -294,7 +294,7 @@ export default function AIImmersion() {
                  className="flex flex-col items-center gap-6"
                >
                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Apoio Estratégico</span>
-                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                  <div className="h-20 md:h-32 hover:scale-105 transition-transform duration-500">
                      <img src={IMAGES.santaPermuta} alt="Santa Permuta" className="h-full w-auto object-contain" />
                   </div>
                </motion.div>
