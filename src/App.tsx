@@ -35,6 +35,7 @@ import AdminContent from '@/pages/admin/Content';
 import AdminSponsoredVideos from '@/pages/admin/SponsoredVideos';
 import AdminBlog from '@/pages/admin/Blog';
 import AdminStoreManagement from '@/pages/admin/StoreManagement';
+import AIImmersionDashboard from '@/pages/admin/AIImmersionDashboard';
 
 // Guards
 import RequireAuth from '@/components/guards/RequireAuth';
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="content" element={<AdminContent />} />
             <Route path="sponsored-videos" element={<AdminSponsoredVideos />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="imersao" element={<AIImmersionDashboard />} />
           </Route>
 
           {/* Standalone Landing Pages (outside Layout) */}

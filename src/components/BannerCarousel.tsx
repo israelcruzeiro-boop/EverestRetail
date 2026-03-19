@@ -40,6 +40,13 @@ export default function BannerCarousel({ slides, bannerLink }: BannerCarouselPro
             />
             {/* Overlay sutil para o efeito de escurecimento no hover */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 z-10" />
+            
+            {/* Botão de Call to Action */}
+            <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-20">
+                <div className="bg-orange-600 text-white text-[10px] md:text-[12px] font-black uppercase tracking-[0.2em] px-5 py-2.5 rounded-md shadow-xl transition-all group-hover:bg-orange-700 active:scale-95 flex items-center gap-2">
+                    Acessar <span className="text-lg">→</span>
+                </div>
+            </div>
         </>
     );
 

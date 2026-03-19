@@ -5,6 +5,7 @@ import {
   Zap, Target, Cpu, MousePointer2, Workflow, TrendingUp, CheckCircle2, Clock, Calendar, MapPin, Laptop, ChevronRight, ShieldCheck, Users, Briefcase, Layers, Sparkles, Ticket, Star, Brain, Terminal, Rocket, Map, MessageCircle, ArrowRight, Check, PlayCircle, Trophy, BarChart3
 } from 'lucide-react';
 import { APP_CONFIG } from '@/config/appConfig';
+import { trackImersaoEvent } from '@/lib/tracking';
 
 /**
  * IMERSÃO DE IA NA PRÁTICA - LANDING PAGE PREMIUM
@@ -17,7 +18,8 @@ const IMAGES = {
   leandro: 'https://ik.imagekit.io/lflb43qwh/ENT/LeandroK.jpeg',
   gabriel: 'https://ik.imagekit.io/lflb43qwh/ENT/GabrielC.jpeg?updatedAt=1773885482950',
   sicredi: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Sicredi.png?updatedAt=1773712987920',
-  santaPermuta: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Santa%20Permuta.jpg?updatedAt=1773712988606'
+  santaPermuta: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Santa%20Permuta.jpg?updatedAt=1773712988606',
+  ent: '/ent-logo.png'
 };
 
 const PAYMENT_URL = 'https://clkdmg.site/pay/imersao-de-ia-na-pratica';
@@ -99,6 +101,10 @@ export default function AIImmersion() {
     window.scrollTo(0, 0);
     // Smooth scroll behavior
     document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Tracking: Page View
+    trackImersaoEvent('page_view');
+
     return () => {
       document.documentElement.style.scrollBehavior = 'auto';
     };
@@ -128,6 +134,7 @@ export default function AIImmersion() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => trackImersaoEvent('click_buy')}
               className="bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl shadow-orange-600/20 transition-all"
             >
               Garantir Vaga
@@ -181,6 +188,7 @@ export default function AIImmersion() {
                     href="https://share.google/IOtYfSZxkvXdhJVVG" 
                     target="_blank" 
                     rel="noopener noreferrer" 
+                    onClick={() => trackImersaoEvent('click_location')}
                     className="flex items-center gap-4 hover:opacity-80 transition-opacity group"
                   >
                     <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:border-orange-500/50 transition-colors">
@@ -201,6 +209,7 @@ export default function AIImmersion() {
                     target="_blank"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    onClick={() => trackImersaoEvent('click_buy')}
                     className="group relative flex items-center gap-4 bg-orange-600 hover:bg-orange-500 text-white px-10 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[16px] shadow-2xl shadow-orange-600/40"
                   >
                     <span>Garantir Minha Vaga</span>
@@ -246,35 +255,52 @@ export default function AIImmersion() {
       </section>
 
       {/* SEÇÃO: PATROCÍNIO E APOIO (WHITE AREA) */}
-      <section className="bg-white py-20 relative z-10">
-        <div className="container max-w-7xl mx-auto px-4">
-           <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-40">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="flex flex-col items-center gap-8"
-              >
-                 <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-400">Patrocínio Master</span>
-                 <div className="h-20 md:h-32 hover:scale-105 transition-transform duration-500">
-                    <img src={IMAGES.sicredi} alt="Sicredi" className="h-full w-auto object-contain" />
-                 </div>
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="flex flex-col items-center gap-8"
-              >
-                 <span className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-400">Apoio Estratégico</span>
-                 <div className="h-20 md:h-32 hover:scale-105 transition-transform duration-500">
-                    <img src={IMAGES.santaPermuta} alt="Santa Permuta" className="h-full w-auto object-contain" />
-                 </div>
-              </motion.div>
-           </div>
-        </div>
-      </section>
+      <section className="bg-white py-24 relative z-10">
+         <div className="container max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-32">
+               {/* REALIZAÇÃO */}
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 className="flex flex-col items-center gap-6"
+               >
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Realização</span>
+                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                     <img src={IMAGES.ent} alt="ENT" className="h-full w-auto object-contain" />
+                  </div>
+               </motion.div>
+
+               {/* PATROCÍNIO */}
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 transition={{ delay: 0.1 }}
+                 className="flex flex-col items-center gap-6"
+               >
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Patrocínio Master</span>
+                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                     <img src={IMAGES.sicredi} alt="Sicredi" className="h-full w-auto object-contain" />
+                  </div>
+               </motion.div>
+
+               {/* APOIO */}
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+                 transition={{ delay: 0.2 }}
+                 className="flex flex-col items-center gap-6"
+               >
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Apoio Estratégico</span>
+                  <div className="h-12 md:h-16 hover:scale-105 transition-transform duration-500">
+                     <img src={IMAGES.santaPermuta} alt="Santa Permuta" className="h-full w-auto object-contain" />
+                  </div>
+               </motion.div>
+            </div>
+         </div>
+       </section>
 
       {/* SEÇÃO 2: PARA QUEM É ESSA IMERSÃO */}
       <section className="py-32 relative bg-[#080808]">
@@ -642,6 +668,7 @@ export default function AIImmersion() {
                    target="_blank"
                    whileHover={{ scale: 1.05 }}
                    whileTap={{ scale: 0.95 }}
+                   onClick={() => trackImersaoEvent('click_buy')}
                    className="w-full md:w-auto inline-flex items-center gap-6 bg-white text-black px-16 py-8 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xl shadow-2xl shadow-white/5 hover:bg-orange-600 hover:text-white transition-all group"
                  >
                     <span>Quero Participar</span>
@@ -683,6 +710,7 @@ export default function AIImmersion() {
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         whileHover={{ scale: 1.1 }}
+        onClick={() => trackImersaoEvent('click_whatsapp')}
         className="fixed bottom-8 right-8 z-[100] w-16 h-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl"
       >
         <MessageCircle className="w-8 h-8 fill-current" />

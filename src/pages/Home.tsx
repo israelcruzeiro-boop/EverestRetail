@@ -114,24 +114,40 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 mt-4 md:mt-6">
         <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6">
           {/* Headline à Esquerda */}
-          <div className="flex flex-col justify-center md:w-[42%] py-4 md:py-6 px-2 md:px-0">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[26px] sm:text-[30px] md:text-[36px] lg:text-[42px] font-black text-[#0B1220] leading-[1.1] tracking-tight"
-            >
-              Tudo o que o varejo precisa para{' '}
-              <span className="text-orange-600">se atualizar</span>, aprender e evoluir.
-            </motion.h1>
-            <motion.p
+          <div className="flex flex-col md:w-[42%] py-4 md:py-6 px-2 md:px-0">
+            <div className="flex-1 flex flex-col justify-center">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="text-[26px] sm:text-[30px] md:text-[36px] lg:text-[42px] font-black text-[#0B1220] leading-[1.1] tracking-tight"
+              >
+                Tudo o que o varejo precisa para{' '}
+                <span className="text-orange-600">se atualizar</span>, aprender e evoluir.
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="mt-4 text-[11px] md:text-[12px] font-black text-slate-400 tracking-[0.05em]"
+              >
+                Acesse conteúdos, evercasts e soluções em uma plataforma criada para conectar estratégia, tecnologia e performance no varejo.
+              </motion.p>
+            </div>
+
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-4 text-[11px] md:text-[12px] font-black text-slate-400 tracking-[0.05em]"
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-6 md:mt-0"
             >
-              Acesse conteúdos, evercasts e soluções em uma plataforma criada para conectar estratégia, tecnologia e performance no varejo.
-            </motion.p>
+              <Link
+                to="/marketplace"
+                className="inline-flex items-center justify-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white text-[12px] md:text-[14px] font-black uppercase tracking-widest rounded-md transition-all shadow-lg hover:shadow-orange-500/20 hover:-translate-y-0.5 active:scale-95"
+              >
+                Ir para o Marketplace
+              </Link>
+            </motion.div>
           </div>
 
           {/* Banner Carrossel à Direita */}

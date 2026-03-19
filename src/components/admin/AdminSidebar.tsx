@@ -4,6 +4,7 @@ import { APP_CONFIG } from '../../config/appConfig';
 
 const menuItems = [
   { path: '/admin', label: 'Dashboard', icon: '📊' },
+  { path: '/admin/imersao', label: 'Imersão IA', icon: '🚀' },
   { path: '/admin/products', label: 'Produtos', icon: '📦' },
   { path: '/admin/store', label: 'Loja EC', icon: '🪙' },
   { path: '/admin/content', label: 'Conteúdo', icon: '✨' },
