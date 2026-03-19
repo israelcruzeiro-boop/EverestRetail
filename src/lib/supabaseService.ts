@@ -30,6 +30,7 @@ export const supabaseService = {
       videoUrl: p.video_url,
       ctaPrimaryLabel: p.cta_primary_label,
       ctaSecondaryLabel: p.cta_secondary_label,
+      type: p.type || 'digital',
       createdAt: p.created_at,
       updatedAt: p.updated_at
     }));
@@ -59,6 +60,7 @@ export const supabaseService = {
       testimonial: product.testimonial,
       cta_primary_label: product.ctaPrimaryLabel,
       cta_secondary_label: product.ctaSecondaryLabel,
+      type: product.type || 'digital',
       updated_at: new Date().toISOString()
     };
 

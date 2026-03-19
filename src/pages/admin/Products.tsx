@@ -29,6 +29,7 @@ export default function Products() {
     name: '',
     slug: '',
     category: 'SaaS',
+    type: 'digital',
     status: 'active',
     priceCents: 0,
     originalPriceCents: 0,
@@ -83,6 +84,7 @@ export default function Products() {
         name: '',
         slug: '',
         category: 'SaaS',
+        type: 'digital',
         status: 'active',
         priceCents: 0,
         originalPriceCents: 0,
@@ -208,14 +210,23 @@ export default function Products() {
             .delete()
             .eq('id', id);
 
-          if (error) throw error;
+          if (error) {
+            console.error('Erro detalhado ao excluir:', error);
+            if (error.code === '23503') {
+              alert('Não é possível excluir este produto pois ele possui registros vinculados (vendas, solicitações ou avaliações).');
+            } else {
+              throw error;
+            }
+            return;
+          }
         } else {
           const products = storageService.getProducts();
           storageService.saveProducts(products.filter(p => p.id !== id));
         }
         await loadProducts();
-      } catch (err) {
-        alert('Erro ao excluir produto.');
+      } catch (err: any) {
+        console.error('Erro ao excluir produto:', err);
+        alert(err.message || 'Erro ao excluir produto.');
       }
     }
   };
@@ -251,6 +262,14 @@ export default function Products() {
       accessor: (p) => (
         <span className="text-[10px] font-black px-3 py-1 bg-white border-2 border-[#0B1220] uppercase tracking-widest text-[#0B1220]">
           {p.category}
+        </span>
+      )
+    },
+    {
+      header: 'TIPO',
+      accessor: (p) => (
+        <span className={`text-[10px] font-black px-3 py-1 bg-white border-2 border-[#0B1220] uppercase tracking-widest ${p.type === 'physical' ? 'text-amber-600' : 'text-blue-600'}`}>
+          {p.type === 'physical' ? 'FÍSICO' : 'DIGITAL'}
         </span>
       )
     },
@@ -452,6 +471,15 @@ export default function Products() {
                       <option value="Financeiro">Financeiro</option>
                       <option value="RH">RH</option>
                       <option value="Marketing">Marketing</option>
+                    </Select>
+                  </FormField>
+                  <FormField label="Tipo">
+                    <Select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                    >
+                      <option value="digital">DIGITAL</option>
+                      <option value="physical">FÍSICO</option>
                     </Select>
                   </FormField>
                   <FormField label="Status">

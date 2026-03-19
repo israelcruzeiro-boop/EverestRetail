@@ -19,6 +19,7 @@ import VideocastsPage from '@/pages/Videocasts';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import AIImmersion from '@/pages/AIImmersion';
+import AIImmersionV2 from '@/pages/AIImmersionV2';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import DailyBonusLoader from '@/components/DailyBonusLoader';
 import MissionStreakLoader from '@/components/MissionStreakLoader';
@@ -89,6 +90,7 @@ export default function App() {
 
           {/* Standalone Landing Pages (outside Layout) */}
           <Route path="imersao-ia" element={<AIImmersion />} />
+          <Route path="imersao-ia-v2" element={<AIImmersionV2 />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

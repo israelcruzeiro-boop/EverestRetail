@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { APP_CONFIG } from '@/config/appConfig';
+import { LogOut } from 'lucide-react';
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -43,7 +44,7 @@ export default function Header() {
             <div className="w-px h-4 bg-white/10 mx-2"></div>
 
             {isAuthenticated ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <Link
                   to="/painel"
                   className="flex items-center gap-3 bg-white/5 border border-white/10 pl-4 pr-1 py-1 rounded-full hover:bg-white/10 transition-all group"
@@ -53,6 +54,14 @@ export default function Header() {
                     {user?.name?.charAt(0) || 'U'}
                   </div>
                 </Link>
+                
+                <button
+                  onClick={logout}
+                  className="p-2.5 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all group"
+                  title="Sair da Conta"
+                >
+                  <LogOut size={16} className="group-hover:scale-110 transition-transform" />
+                </button>
               </div>
             ) : (
               <Link

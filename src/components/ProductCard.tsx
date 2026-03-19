@@ -42,7 +42,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       aria-label={product.name}
-      className="group h-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-500 transition-all duration-300 flex flex-col"
+      onClick={handleAction}
+      className="group h-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-blue-500 transition-all duration-300 flex flex-col cursor-pointer"
     >
       {/* Media Container - Reduced height */}
       <div className="relative h-32 sm:h-40 overflow-hidden bg-slate-50">
@@ -67,9 +68,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         )}
 
-        {/* Badge - Small & Discrete */}
-        <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm border border-slate-100 rounded-full text-[8px] font-black uppercase tracking-wider text-blue-600 shadow-sm">
-          {product.category}
+        {/* Badge - Minimalist Type Indicator */}
+        <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/80 backdrop-blur-sm border border-slate-100 rounded text-[9px] font-bold uppercase tracking-wider shadow-sm">
+          <span className={product.type === 'physical' ? 'text-amber-600' : 'text-blue-600'}>
+            {product.type === 'physical' ? 'FÍSICO' : 'DIGITAL'}
+          </span>
         </div>
       </div>
 
@@ -108,16 +111,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               <span className="text-[9px] font-black text-slate-300 uppercase italic">Restrito</span>
             )}
           </div>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAction();
-            }}
-            className="px-3 py-1.5 bg-slate-900 hover:bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg transition-all shadow-sm"
-          >
-            Ver
-          </button>
         </div>
       </div>
     </motion.div>

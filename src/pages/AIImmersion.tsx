@@ -13,9 +13,9 @@ import { APP_CONFIG } from '@/config/appConfig';
  */
 
 const IMAGES = {
-  main: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Imers%C3%A3o%20de%20IA%20.png.jpeg?updatedAt=1773707492180',
-  leandro: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Leandro%20Korting.jpeg?updatedAt=1773710984709',
-  gabriel: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Gabriel.png?updatedAt=1773710985905',
+  main: 'https://ik.imagekit.io/lflb43qwh/ENT/Imersao%20de%20IA%20-%20ENT.jpeg',
+  leandro: 'https://ik.imagekit.io/lflb43qwh/ENT/LeandroK.jpeg',
+  gabriel: 'https://ik.imagekit.io/lflb43qwh/ENT/GabrielC.jpeg?updatedAt=1773885482950',
   sicredi: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Sicredi.png?updatedAt=1773712987920',
   santaPermuta: 'https://ik.imagekit.io/lflb43qwh/ENTStore/Santa%20Permuta.jpg?updatedAt=1773712988606'
 };
@@ -177,15 +177,20 @@ export default function AIImmersion() {
                       <p className="text-lg font-bold">26 de Março, 09h</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                  <a 
+                    href="https://share.google/IOtYfSZxkvXdhJVVG" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-4 hover:opacity-80 transition-opacity group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:border-orange-500/50 transition-colors">
                       <MapPin className="w-6 h-6 text-orange-500" />
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Localização</p>
                       <p className="text-lg font-bold">Auditório Sicredi</p>
                     </div>
-                  </div>
+                  </a>
                 </div>
 
                 <CountdownTimer />

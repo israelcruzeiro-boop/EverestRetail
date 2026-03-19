@@ -1,11 +1,13 @@
 export type ProductStatus = 'active' | 'inactive' | 'pending';
 export type ProductCategory = 'SaaS' | 'Consultoria' | 'IA' | 'Operação' | 'Financeiro' | 'RH' | 'Marketing';
+export type ProductType = 'physical' | 'digital';
 
 export interface AdminProduct {
   id: string;
   name: string;
   slug?: string;
   category: ProductCategory;
+  type: ProductType;
   status: ProductStatus;
 
   priceCents: number;

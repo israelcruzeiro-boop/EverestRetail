@@ -122,13 +122,13 @@ export default function Home() {
               className="text-[26px] sm:text-[30px] md:text-[36px] lg:text-[42px] font-black text-[#0B1220] leading-[1.1] tracking-tight"
             >
               Tudo o que o varejo precisa para{' '}
-              <span className="text-red-600">se atualizar</span>, aprender e evoluir.
+              <span className="text-orange-600">se atualizar</span>, aprender e evoluir.
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-4 text-[11px] md:text-[12px] font-black text-slate-400 uppercase tracking-[0.2em]"
+              className="mt-4 text-[11px] md:text-[12px] font-black text-slate-400 tracking-[0.05em]"
             >
               Acesse conteúdos, evercasts e soluções em uma plataforma criada para conectar estratégia, tecnologia e performance no varejo.
             </motion.p>
