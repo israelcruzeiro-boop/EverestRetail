@@ -139,7 +139,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-6 md:mt-0"
+              className="mt-6 md:mt-7"
             >
               <Link
                 to="/marketplace"

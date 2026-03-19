@@ -208,20 +208,23 @@ export default function AIImmersion() {
                     href={PAYMENT_URL}
                     target="_blank"
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => trackImersaoEvent('click_buy')}
-                    className="group relative flex items-center gap-4 bg-orange-600 hover:bg-orange-500 text-white px-10 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[16px] shadow-2xl shadow-orange-600/40"
+                    className="group relative flex items-center gap-4 bg-orange-600 hover:bg-orange-500 text-white px-6 py-4 md:px-10 md:py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[13px] md:text-[16px] shadow-2xl shadow-orange-600/40"
                   >
-                    <span>Garantir Minha Vaga</span>
+                    <span>Garantir Vaga</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </motion.a>
                   
-                  <div className="flex flex-col items-center sm:items-start">
+                  <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
                     <div className="flex items-baseline gap-2">
                       <span className="text-white/40 line-through text-lg font-bold">R$ 1.500</span>
                       <span className="text-3xl font-black text-white tracking-tighter">R$ 997,00</span>
                     </div>
-                    <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">Investimento Lote Especial</p>
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">Investimento Lote Especial</p>
+                      <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.15em]">1º LOTE ATÉ DOMINGO (22/03) ÀS 23:59</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -237,13 +240,13 @@ export default function AIImmersion() {
                 <div className="absolute -inset-4 bg-orange-500/20 blur-[60px] rounded-full animate-pulse" />
                 <div className="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl shadow-black/50 aspect-[4/5] lg:aspect-auto">
                   <img src={IMAGES.main} alt="Imersão IA" className="w-full h-full object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black via-black/40 to-transparent">
+                  <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 bg-gradient-to-t from-black via-black/60 to-transparent">
                     <div className="flex items-center gap-4">
-                      <div className="flex -space-x-4">
-                        <img src={IMAGES.gabriel} className="w-12 h-12 rounded-full border-2 border-orange-500 object-cover" alt="Gabriel" />
-                        <img src={IMAGES.leandro} className="w-12 h-12 rounded-full border-2 border-orange-500 object-cover" alt="Leandro" />
+                      <div className="flex -space-x-4 shrink-0">
+                        <img src={IMAGES.gabriel} className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-orange-500 object-cover" alt="Gabriel" />
+                        <img src={IMAGES.leandro} className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-orange-500 object-cover" alt="Leandro" />
                       </div>
-                      <p className="text-sm font-bold text-white/80">Mentoria presencial com especialistas do mercado.</p>
+                      <p className="text-[10px] md:text-sm font-bold text-white/90 leading-tight">Mentoria presencial com especialistas do mercado.</p>
                     </div>
                   </div>
                 </div>
@@ -663,19 +666,22 @@ export default function AIImmersion() {
               </div>
 
               <div className="space-y-8">
-                 <motion.a
-                   href={PAYMENT_URL}
-                   target="_blank"
-                   whileHover={{ scale: 1.05 }}
-                   whileTap={{ scale: 0.95 }}
-                   onClick={() => trackImersaoEvent('click_buy')}
-                   className="w-full md:w-auto inline-flex items-center gap-6 bg-white text-black px-16 py-8 rounded-[2rem] font-black uppercase tracking-[0.2em] text-xl shadow-2xl shadow-white/5 hover:bg-orange-600 hover:text-white transition-all group"
-                 >
-                    <span>Quero Participar</span>
-                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                 </motion.a>
-                 <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Vagas extremamente limitadas pelo formato prático.</p>
-              </div>
+                  <motion.a
+                    href={PAYMENT_URL}
+                    target="_blank"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => trackImersaoEvent('click_buy')}
+                    className="w-full md:w-auto inline-flex items-center justify-center gap-6 bg-white text-black px-8 py-4 md:px-16 md:py-8 rounded-[2rem] font-black uppercase tracking-[0.2em] text-sm md:text-xl shadow-2xl shadow-white/5 hover:bg-orange-600 hover:text-white transition-all group"
+                  >
+                     <span>Comprar</span>
+                     <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </motion.a>
+                  <div className="space-y-2">
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Vagas extremamente limitadas pelo formato prático.</p>
+                    <p className="text-[10px] text-orange-500 font-black uppercase tracking-[0.2em]">1º LOTE ATÉ DOMINGO (22/03) ÀS 23:59</p>
+                  </div>
+               </div>
 
               <div className="mt-20 pt-10 border-t border-white/5">
                  <p className="text-sm text-slate-500 italic max-w-2xl mx-auto">
