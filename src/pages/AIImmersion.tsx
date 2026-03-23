@@ -219,11 +219,11 @@ export default function AIImmersion() {
                   <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
                     <div className="flex items-baseline gap-2">
                       <span className="text-white/40 line-through text-lg font-bold">R$ 1.500</span>
-                      <span className="text-3xl font-black text-white tracking-tighter">R$ 997,00</span>
+                      <span className="text-3xl font-black text-white tracking-tighter">R$ 1.197,00</span>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">Investimento Lote Especial</p>
-                      <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.15em]">1º LOTE ATÉ DOMINGO (22/03) ÀS 23:59</p>
+                      <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.15em]">2º LOTE DISPONÍVEL</p>
                     </div>
                   </div>
                 </div>
@@ -661,7 +661,7 @@ export default function AIImmersion() {
                  <p className="text-xs uppercase font-black tracking-[0.3em] text-orange-500 mb-2">Ingresso Exclusivo</p>
                  <div className="flex flex-col items-center">
                    <span className="text-slate-600 line-through text-2xl font-black mb-1">R$ 1.500,00</span>
-                   <span className="text-6xl md:text-8xl font-black text-white tracking-tighter">R$ 997,00</span>
+                   <span className="text-6xl md:text-8xl font-black text-white tracking-tighter">R$ 1.197,00</span>
                  </div>
               </div>
 
@@ -679,7 +679,7 @@ export default function AIImmersion() {
                   </motion.a>
                   <div className="space-y-2">
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Vagas extremamente limitadas pelo formato prático.</p>
-                    <p className="text-[10px] text-orange-500 font-black uppercase tracking-[0.2em]">1º LOTE ATÉ DOMINGO (22/03) ÀS 23:59</p>
+                    <p className="text-[10px] text-orange-500 font-black uppercase tracking-[0.2em]">2º LOTE DISPONÍVEL</p>
                   </div>
                </div>
 

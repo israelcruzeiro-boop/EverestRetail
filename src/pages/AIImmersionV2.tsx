@@ -580,7 +580,7 @@ const AIImmersionV2 = () => {
               <p className="text-gray-500 line-through text-2xl mb-3 font-light">De: R$ 1.500</p>
               <div className="flex flex-col items-center justify-center gap-1 mb-10">
                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-cyan-400">Investimento Único</span>
-                <p className="text-7xl md:text-8xl font-black text-white tracking-tighter leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">R$ 997</p>
+                <p className="text-7xl md:text-8xl font-black text-white tracking-tighter leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">R$ 1.197,00</p>
               </div>
 
               <a href={paymentLink} target="_blank" rel="noopener noreferrer">
