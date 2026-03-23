@@ -221,9 +221,9 @@ export default function AIImmersion() {
                       <span className="text-white/40 line-through text-lg font-bold">R$ 1.500</span>
                       <span className="text-3xl font-black text-white tracking-tighter">R$ 1.197,00</span>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">Investimento Lote Especial</p>
-                      <p className="text-[10px] text-white/60 font-black uppercase tracking-[0.15em]">2º LOTE DISPONÍVEL</p>
+                    <div className="space-y-1 text-right sm:text-left">
+                      <p className="text-[10px] text-orange-500 uppercase font-black tracking-widest">Investimento 2º Lote</p>
+                      <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.15em] line-through">1º LOTE ESGOTADO</p>
                     </div>
                   </div>
                 </div>
@@ -679,6 +679,7 @@ export default function AIImmersion() {
                   </motion.a>
                   <div className="space-y-2">
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Vagas extremamente limitadas pelo formato prático.</p>
+                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.15em] line-through">1º LOTE ESGOTADO</p>
                     <p className="text-[10px] text-orange-500 font-black uppercase tracking-[0.2em]">2º LOTE DISPONÍVEL</p>
                   </div>
                </div>
